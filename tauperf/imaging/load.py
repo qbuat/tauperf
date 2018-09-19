@@ -79,14 +79,5 @@ def load_test_data(filenames):
     X_val, y_val = get_X_y(h5files, 'val')
 
     for f in h5files:
-        print 'testing', f.filename
-        t = f.root.data.test.read()
-        features = ['tracks', 's1', 's2', 's3', 's4', 's5']
-        for feat in features:
-            print '\t feature ', feat
-            a = np.isnan(t[feat])
-            print a[a == True]
-
-    for f in h5files:
         f.close()
     return X_test, X_val, y_test, y_val

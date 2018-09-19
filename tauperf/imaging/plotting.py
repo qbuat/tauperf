@@ -189,13 +189,15 @@ def plot_heatmap(image, rec, pos_central_cell, irec, cal_layer, suffix, fixed_sc
     fig.clf()
     plt.close()
 
+def divide_0(a, b):
+    return np.divide(a, b, out=np.zeros_like(a), where=b!=0)
 
 def plot_roc(y_test, y_pred, y_pant):
     from sklearn.metrics import roc_curve
 
     y_test_1p = y_test[np.logical_or(y_test == 0, y_test == 1, y_test == 2)]
     y_pred_1p = y_pred[np.logical_or(y_test == 0, y_test == 1, y_test == 2)]
-    y_pred_1p = y_pred_1p[:,0] / (y_pred_1p[:,0] + y_pred_1p[:,1] + y_pred_1p[:,2])
+    y_pred_1p = divide_0(y_pred_1p[:,0], y_pred_1p[:,0] + y_pred_1p[:,1] + y_pred_1p[:,2])
     fpr_1p0n, tpr_1p0n, _ = roc_curve(y_test_1p, y_pred_1p, pos_label=0)
 
     y_pant_1p0n = y_pant[y_test == 0]
@@ -205,7 +207,7 @@ def plot_roc(y_test, y_pred, y_pant):
     
     y_test_1pXn = y_test[np.logical_or(y_test == 1, y_test == 2)]
     y_pred_1pXn = y_pred[np.logical_or(y_test == 1, y_test == 2)]
-    y_pred_1pXn = y_pred_1pXn[:,1] / (y_pred_1pXn[:,1] + y_pred_1pXn[:,2])
+    y_pred_1pXn = divide_0(y_pred_1pXn[:,1], (y_pred_1pXn[:,1] + y_pred_1pXn[:,2]))
     fpr_1p1n, tpr_1p1n, _ = roc_curve(y_test_1pXn, y_pred_1pXn, pos_label=1)
 
     y_pant_1p1n = y_pant[y_test == 1]
@@ -217,7 +219,7 @@ def plot_roc(y_test, y_pred, y_pant):
     y_pred_3p = y_pred[np.logical_or(y_test == 3, y_test == 4)]
     y_pant_3p = y_pant[np.logical_or(y_test == 3, y_test == 4)]
 
-    y_pred_3p = y_pred_3p[:,3] / (y_pred_3p[:,3] + y_pred_3p[:,4])
+    y_pred_3p = divide_0(y_pred_3p[:,3], (y_pred_3p[:,3] + y_pred_3p[:,4]))
     fpr_3p0n, tpr_3p0n, _ = roc_curve(y_test_3p, y_pred_3p, pos_label=3)
 
     y_pant_3p0n = y_pant[y_test == 3]
