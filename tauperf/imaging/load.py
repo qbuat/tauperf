@@ -5,33 +5,41 @@ import tables
 
 
 def print_sample_size(filenames, labels):
+    """
+    printing information about the samples
+    (training, validation and testing size)
+    """
+    log.info('Samples:')
+
     if len(filenames) != len(labels):
         raise ValueError('filenames and labels must have the same length')
 
     trains = []
     tests  = []
     vals   = []
+    n_trains = []
     for f in filenames:
         table = tables.open_file(f)
         test = len(table.root.data.test)
         val  = len(table.root.data.val)
         train = 0
+        n_train = 0
         for obj in table.root.data:
             if isinstance(obj, tables.Table):
                 if 'train_' in obj.name:
                     train += len(obj)
+                    n_train += 1
 
         table.close()
         trains.append(train)
         tests.append(test)
         vals.append(val)
-
-    headers = ["Sample", "Training", "Validation", "Testing"]
+        n_trains.append(n_train)
+    headers = ["Sample", "Training", "Validation", "Testing", "Training tables"]
     sample_size_table = []
-    for l, tr, v, te in zip(labels, trains, vals, tests):
-        sample_size_table.append([l, tr, v, te])
+    for l, tr, v, te, n_tr in zip(labels, trains, vals, tests, n_trains):
+        sample_size_table.append([l, tr, v, te, n_tr])
 
-    log.info('Samples:')
     print 
     from tabulate import tabulate
     print tabulate(sample_size_table, headers=headers, tablefmt='simple')

@@ -94,6 +94,7 @@ else:
         X_val, y_val_cat,
         n_chunks=args.training_chunks,
         use_multiprocessing=False,
+        workers=1,
         filename=model_filename,
         loss='categorical_crossentropy',
         overwrite=args.overwrite,
