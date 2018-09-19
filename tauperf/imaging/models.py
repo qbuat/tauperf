@@ -1,6 +1,6 @@
 import os
 from keras.models import Sequential, Model
-from keras.layers import Input
+from keras.layers import Input, add
 from keras.layers.merge import concatenate
 from keras.layers.core import Dense, Dropout, Activation, Flatten, Reshape, Masking
 from keras.layers.convolutional import Convolution1D, Convolution2D, Conv2D
@@ -210,8 +210,10 @@ def dense_merged_model_topo(data, n_classes=3, final_activation='softmax'):
     s2_shape = data[0]['s2'].shape
     s2_x = Reshape((s2_shape[0], s2_shape[1], 1))(s2_input)
     log.info('\t s2 input shape   = {0}'.format(s2_x._keras_shape))
-    s2_x = Conv2D(64, (2, 2), padding='same', activation='relu')(s2_x)
+    s2_conv = Conv2D(64, (2, 2), padding='same', activation='relu')(s2_x)
     log.info('\t s2 convolu shape = {0}'.format(s2_x._keras_shape))
+    s2_x = add([s2_conv, s2_x])
+    log.info(']t s2 residual connection = {0}'.format(s2_x._keras_shape))
     s2_x = MaxPooling2D((2, 2))(s2_x)
     log.info('\t s2 maxpool shape = {0}'.format(s2_x._keras_shape))
     s2_x = Dropout(0.2)(s2_x)
