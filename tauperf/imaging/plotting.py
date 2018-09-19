@@ -6,7 +6,8 @@ import matplotlib as mpl;
 
 techlab_hosts = [
     'techlab-gpu-nvidiak20-03.cern.ch',
-    'techlab-gpu-nvidiagtx1080-07.cern.ch'
+    'techlab-gpu-nvidiagtx1080-07.cern.ch',
+    'tlab-gpu-gtx1080ti-07.cern.ch',
 ]
 if socket.gethostname() in techlab_hosts:
     mpl.use('PS')
