@@ -1,7 +1,6 @@
 import os
 import numpy as np
 from argparse import ArgumentParser
-from sklearn.metrics import roc_curve, confusion_matrix
 from keras.utils.np_utils import to_categorical
 from tauperf.imaging.load import load_test_data, print_sample_size
 
@@ -28,6 +27,10 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+if args.debug:
+    log.warning('')
+    log.warning('DEBUG MODE ACTIVATED')
+    log.warning('')
 
 # data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test')
 #data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_uniform_size')
@@ -59,7 +62,7 @@ print_sample_size(filenames, labels)
 features = ['tracks', 's1', 's2', 's3', 's4', 's5']
 
 test, val, y_test, y_val = load_test_data(
-    filenames)
+    filenames, debug=args.debug)
 
 X_test  = [test[feat] for feat in features]
 
@@ -114,11 +117,13 @@ log.info('compute classifier scores')
 y_pred = model.predict(X_test, batch_size=32, verbose=1)
 print
 
-log.info('drawing the confusion matrix')
+log.info('drawing the computer-vision confusion matrix')
+from sklearn.metrics import confusion_matrix
+from tauperf.imaging.plotting import plot_confusion_matrix
+
 cnf_mat = confusion_matrix(y_test, np.argmax(y_pred, axis=1))
 diagonal = float(np.trace(cnf_mat)) / float(np.sum(cnf_mat))
 
-# import plotting here in case there is an import issue unrelated to training
 from tauperf.imaging.plotting import plot_confusion_matrix, plot_roc
 plot_confusion_matrix(
     cnf_mat, classes=labels, 
@@ -134,5 +139,8 @@ plot_confusion_matrix(
     name='plots/imaging/confusion_matrix_reference.pdf')
 
 log.info('drawing the roc curves and pantau WP')
+from sklearn.metrics import roc_curve
+from tauperf.imaging.plotting import plot_roc
 plot_roc(y_test, y_pred, test['pantau'])
 
+log.info('job finished succesfully!')

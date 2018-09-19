@@ -72,11 +72,11 @@ def get_X_y(h5_files, data_type, equal_size=False, debug=False):
     return X_data, y_data
 
 
-def load_test_data(filenames):
+def load_test_data(filenames, debug=False):
 
     h5files = [tables.open_file(filename) for filename in filenames]
-    X_test, y_test = get_X_y(h5files, 'test')
-    X_val, y_val = get_X_y(h5files, 'val')
+    X_test, y_test = get_X_y(h5files, 'test', debug=debug)
+    X_val, y_val = get_X_y(h5files, 'val', debug=debug)
 
     for f in h5files:
         f.close()

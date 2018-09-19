@@ -67,7 +67,7 @@ def plot_confusion_matrix(cm, classes,
     plt.figure()
     np.set_printoptions(precision=2)
     diagonal = float(np.trace(cm)) / float(np.sum(cm))
-    log.info('Diag / Total = {0} / {1}'.format(np.trace(cm), np.sum(cm)))
+    log.info('Diag / Total = {0} / {1} = {2}%'.format(np.trace(cm), np.sum(cm), 100 * diagonal))
     cm = cm.T.astype('float') / cm.T.sum(axis=0)
     cm = np.rot90(cm.T, 1)
 
@@ -84,10 +84,10 @@ def plot_confusion_matrix(cm, classes,
 
     plt.colorbar()
 
-    log.info('Confusion matrix')
-    print
-    print(cm)
-    print 
+    log.info('')
+    for l in cm:
+        log.info('\t {}'.format(l))
+    log.info('')
 
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
