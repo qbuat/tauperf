@@ -164,12 +164,11 @@ def process_taus(
                 continue
 
             # get the image for each layer
-            s1 = tau_topo_image(index, rec, cal_layer=1, width=128, height=4)
-#             s1 = tau_topo_image(index, rec, cal_layer=1, width=120, height=4)
-            s2 = tau_topo_image(index, rec, cal_layer=2, width=32, height=32)
-            s3 = tau_topo_image(index, rec, cal_layer=3, width=16, height=32)
-            s4 = tau_topo_image(index, rec, cal_layer=12, width=16, height=16)
-            s5 = tau_topo_image(index, rec, cal_layer=13, width=16, height=16)
+            s1 = tau_topo_image(index, rec, cal_layer=1, width=Image.columns['s1'].shape[1], height=Image.columns['s1'].shape[0])
+            s2 = tau_topo_image(index, rec, cal_layer=2, width=Image.columns['s2'].shape[1], height=Image.columns['s2'].shape[0])
+            s3 = tau_topo_image(index, rec, cal_layer=3, width=Image.columns['s3'].shape[1], height=Image.columns['s3'].shape[0])
+            s4 = tau_topo_image(index, rec, cal_layer=12,width=Image.columns['s4'].shape[1], height=Image.columns['s4'].shape[0])
+            s5 = tau_topo_image(index, rec, cal_layer=13,width=Image.columns['s5'].shape[1], height=Image.columns['s5'].shape[0])
 
             # making all the images as (32 X 128)
 #             s1_repeat = np.repeat(s1, 8, axis=0)
