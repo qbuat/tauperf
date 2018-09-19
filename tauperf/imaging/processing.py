@@ -12,17 +12,17 @@ from . import log; log = log.getChild(__name__)
 
 class Image(tables.IsDescription):
 
-#     s1 = tables.Float64Col(shape=(4, 120), dflt=0.0)
-#     s2 = tables.Float64Col(shape=(32, 32), dflt=0.0)
-#     s3 = tables.Float64Col(shape=(32, 16), dflt=0.0)
-#     s4 = tables.Float64Col(shape=(16, 16), dflt=0.0)
-#     s5 = tables.Float64Col(shape=(16, 16), dflt=0.0)
+    s1 = tables.Float64Col(shape=(4, 128), dflt=0.0)
+    s2 = tables.Float64Col(shape=(32, 32), dflt=0.0)
+    s3 = tables.Float64Col(shape=(32, 16), dflt=0.0)
+    s4 = tables.Float64Col(shape=(16, 16), dflt=0.0)
+    s5 = tables.Float64Col(shape=(16, 16), dflt=0.0)
 
-    s1 = tables.Float32Col(shape=(32, 128), dflt=0.0)
-    s2 = tables.Float32Col(shape=(32, 128), dflt=0.0)
-    s3 = tables.Float32Col(shape=(32, 128), dflt=0.0)
-    s4 = tables.Float32Col(shape=(32, 128), dflt=0.0)
-    s5 = tables.Float32Col(shape=(32, 128), dflt=0.0)
+#     s1 = tables.Float32Col(shape=(32, 128), dflt=0.0)
+#     s2 = tables.Float32Col(shape=(32, 128), dflt=0.0)
+#     s3 = tables.Float32Col(shape=(32, 128), dflt=0.0)
+#     s4 = tables.Float32Col(shape=(32, 128), dflt=0.0)
+#     s5 = tables.Float32Col(shape=(32, 128), dflt=0.0)
 
     tracks = tables.Float64Col(shape=(15, 4))
     pt = tables.Float64Col()
@@ -172,22 +172,22 @@ def process_taus(
             s5 = tau_topo_image(index, rec, cal_layer=13, width=16, height=16)
 
             # making all the images as (32 X 128)
-            s1_repeat = np.repeat(s1, 8, axis=0)
-            s2_repeat = np.repeat(s2, 4, axis=1)
-            s3_repeat = np.repeat(s3, 8, axis=1)
-            s4_repeat = np.repeat(s4, 2, axis=0)
-            s4_repeat = np.repeat(s4_repeat, 8, axis=1)
-            s5_repeat = np.repeat(s5, 2, axis=0)
-            s5_repeat = np.repeat(s5_repeat, 8, axis=1)
+#             s1_repeat = np.repeat(s1, 8, axis=0)
+#             s2_repeat = np.repeat(s2, 4, axis=1)
+#             s3_repeat = np.repeat(s3, 8, axis=1)
+#             s4_repeat = np.repeat(s4, 2, axis=0)
+#             s4_repeat = np.repeat(s4_repeat, 8, axis=1)
+#             s5_repeat = np.repeat(s5, 2, axis=0)
+#             s5_repeat = np.repeat(s5_repeat, 8, axis=1)
 
         # table_name = locate_index(ir, train_ind, test_ind, val_ind) 
         # table = getattr(out_h5.root.data, table_name)
         # image = table.row
-            image['s1'] = s1_repeat
-            image['s2'] = s2_repeat
-            image['s3'] = s3_repeat
-            image['s4'] = s4_repeat
-            image['s5'] = s5_repeat
+            image['s1'] = s1#_repeat
+            image['s2'] = s2#_repeat
+            image['s3'] = s3#_repeat
+            image['s4'] = s4#_repeat
+            image['s5'] = s5#_repeat
             image['tracks'] = tau_tracks_simple(rec)
             image['pt'] = rec['off_pt']
             image['eta'] = rec['off_eta']
