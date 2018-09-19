@@ -38,7 +38,7 @@ def print_sample_size(filenames, labels):
     print
 
 
-def get_X_y(h5_files, data_type, features, equal_size=False, debug=False):
+def get_X_y(h5_files, data_type, equal_size=False, debug=False):
 
     data = []
     for h5_file in h5_files:
@@ -64,11 +64,11 @@ def get_X_y(h5_files, data_type, features, equal_size=False, debug=False):
     return X_data, y_data
 
 
-def load_test_data(filenames, features):
+def load_test_data(filenames):
 
     h5files = [tables.open_file(filename) for filename in filenames]
-    X_test, y_test = get_X_y(h5files, 'test', features)
-    X_val, y_val = get_X_y(h5files, 'val', features)
+    X_test, y_test = get_X_y(h5files, 'test')
+    X_val, y_val = get_X_y(h5files, 'val')
     for f in h5files:
         f.close()
     return X_test, X_val, y_test, y_val

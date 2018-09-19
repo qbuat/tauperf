@@ -32,7 +32,7 @@ args = parser.parse_args()
 # data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test')
 #data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_uniform_size')
 # data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_int')
-data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_float')
+data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_float_s1_128')
                         
 if args.one_prong_only:
     filenames = [
@@ -59,7 +59,7 @@ print_sample_size(filenames, labels)
 features = ['tracks', 's1', 's2', 's3', 's4', 's5']
 
 test, val, y_test, y_val = load_test_data(
-    filenames, features)
+    filenames)
 
 X_test  = [test[feat] for feat in features]
 

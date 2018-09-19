@@ -30,7 +30,7 @@ class TrainSequence(Sequence):
     def __getitem__(self, idx):
         h5files = [tables.open_file(f) for f in self._files]
         X, y = get_X_y(
-            h5files, 'train_{0}'.format(idx), self.features, 
+            h5files, 'train_{0}'.format(idx), 
             equal_size=self._equal_size, debug=self._debug)
         X = [X[feat] for feat in self.features]
         for f in h5files:
