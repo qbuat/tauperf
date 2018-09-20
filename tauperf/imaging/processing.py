@@ -31,6 +31,11 @@ class Image(tables.IsDescription):
     mu = tables.Float64Col()
     pantau = tables.Float64Col()
     truthmode = tables.Float64Col()
+    true_pt = tables.Float64Col()
+    true_eta = tables.Float64Col()
+    true_phi = tables.Float64Col()
+    true_m = tables.Float64Col()
+
     
 def locate_index(index, training_tables, test_table, val_table):
     if np.isin(index, test_table):
@@ -194,6 +199,10 @@ def process_taus(
             image['mu'] = rec['averageintpercrossing']
             image['pantau'] = rec['off_decaymode']
             image['truthmode'] = rec['true_decaymode']
+            image['true_pt'] = rec['true_pt']
+            image['true_eta'] = rec['true_eta']
+            image['true_phi'] = rec['true_phi']
+            image['true_m'] = rec['true_m']
             image.append()
 
             if do_plot:
