@@ -1,25 +1,28 @@
 import os
-from . import log; log = log.getChild(__name__)
-import numpy as np
 import tables
-
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras.metrics import categorical_accuracy
 from keras.utils import Sequence
 from keras.utils.np_utils import to_categorical
 
 from load import get_X_y
+from . import log; log = log.getChild(__name__)
 
 class TrainSequence(Sequence):
     """
     See https://keras.io/utils/
     """
     def __init__(
-        self, filenames, features, n_chunks, 
-        equal_size=False, debug=False):
+            self, 
+            filenames, 
+            n_chunks, 
+            features, 
+            reg_features=None,
+            equal_size=False, 
+            debug=False):
 
         self._files = filenames
-        self.features = features
+        self._features = features
+        self._reg_features = reg_features
         self.n_chunks = n_chunks
         self._equal_size = equal_size
         self._debug = debug
@@ -30,29 +33,41 @@ class TrainSequence(Sequence):
     def __getitem__(self, idx):
         h5files = [tables.open_file(f) for f in self._files]
         X, y = get_X_y(
-            h5files, 'train_{0}'.format(idx), 
-            equal_size=self._equal_size, debug=self._debug)
-        X = [X[feat] for feat in self.features]
+            h5files, 
+            'train_{0}'.format(idx), 
+            equal_size=self._equal_size, 
+            debug=self._debug)
+        X = [X[feat] for feat in self._features]
         for f in h5files:
             f.close()
-        return X, to_categorical(y, len(self._files))
 
+        if self._reg_features is None:
+            return X, to_categorical(y, len(self._files))
+        else:
+            outputs = [to_categorical(y, len(self._files))]
+            for feat in self._reg_features:
+                outputs.append(X[feat])
+            return X, outputs
 
 def fit_model_gen(
-    model,
-    h5files, features,
-    X_test, y_test, 
-    n_chunks=3,
-    use_multiprocessing=False,
-    workers=1,
-    filename='cache/crackpot.h5',
-    loss='binary_crossentropy',
-    overwrite=False,
-    no_train=False,
-    equal_size=False,
-    dev=False,
-    debug=False):
-
+        model,
+        h5files, 
+        features,
+        X_test, y_test, 
+        reg_features=None,
+        n_chunks=3,
+        use_multiprocessing=False,
+        workers=1,
+        filename='cache/crackpot.h5',
+        metrics='categorical_accuracy',
+        losses='categorical_crossentropy',
+        loss_weights=1,
+        overwrite=False,
+        no_train=False,
+        equal_size=False,
+        dev=False,
+        debug=False):
+    
  
     if not overwrite and os.path.exists(filename):
         log.error('weight file {0} exists, aborting!'.format(filename))
@@ -60,13 +75,28 @@ def fit_model_gen(
 
     try:
         log.info('Compile model')
+        if not isinstance(losses, (tuple, list)):
+            losses = [losses]
+        
+        if not isinstance(metrics, (tuple, list)):
+            metrics = [metrics]
+
+        if not isinstance(loss_weights, (tuple, list)):
+            loss_weights = [loss_weights]
+
         model.compile(
             optimizer='rmsprop',
-            loss=loss,
-            metrics=[categorical_accuracy])
+            loss=losses,
+            loss_weights=loss_weights,
+            metrics=metrics)
 
         log.info('Create the sequence')
-        train_sequence = TrainSequence(h5files, features, n_chunks, debug=debug)
+        train_sequence = TrainSequence(
+            h5files, 
+            n_chunks, 
+            features, 
+            reg_features=reg_features, 
+            debug=debug)
             
         log.info('Start training ...')
 
@@ -82,11 +112,16 @@ def fit_model_gen(
                 ModelCheckpoint(filename, monitor='val_loss', verbose=True, save_best_only=True)
                 ]
 
+        validation_data = (
+            [X_test[feat] for feat in features],
+            y_test if reg_features is None else [y_test] + [X_test[feat] for feat in reg_features])
+
+
         model.fit_generator(
             train_sequence,
             len(train_sequence),
             epochs=100,
-            validation_data=(X_test, y_test),
+            validation_data=validation_data,
             use_multiprocessing=use_multiprocessing,
             workers=workers,
             callbacks=callbacks)

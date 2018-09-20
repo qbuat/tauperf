@@ -60,14 +60,11 @@ else:
 print_sample_size(filenames, labels)
 
 features = ['tracks', 's1', 's2', 's3', 's4', 's5']
+reg_features = ['true_pt', 'true_eta', 'true_phi', 'true_m']
 
 test, val, y_test, y_val = load_test_data(
     filenames, debug=args.debug)
-
-X_test  = [test[feat] for feat in features]
-
-X_val   = [val[feat] for feat in features]
-y_val_cat   = to_categorical(y_val, n_classes)
+y_val_cat = to_categorical(y_val, n_classes)
 
 
 # ##############################################
@@ -91,15 +88,16 @@ else:
     # model = dense_merged_model_topo_upsampled(test, n_classes=n_classes, final_activation='softmax')
 
     from tauperf.imaging.utils import fit_model_gen
+
+    # metrics = ['categorical_accuracy'] + 4 * []
     fit_model_gen(
         model,
         filenames, features,
-        X_val, y_val_cat,
+        val, y_val_cat,
         n_chunks=args.training_chunks,
         use_multiprocessing=False,
         workers=1,
         filename=model_filename,
-        loss='categorical_crossentropy',
         overwrite=args.overwrite,
         no_train=args.no_train, 
         equal_size=args.equal_size, 
@@ -114,6 +112,7 @@ log.info('testing stuff')
 
 log.info('compute classifier scores')
 
+X_test  = [test[feat] for feat in features]
 y_pred = model.predict(X_test, batch_size=32, verbose=1)
 print
 
