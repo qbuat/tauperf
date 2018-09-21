@@ -122,7 +122,8 @@ log.info('testing stuff')
 log.info('compute classifier scores')
 
 X_test  = [test[feat] for feat in features]
-y_pred = model.predict(X_test, batch_size=32, verbose=1)
+#y_pred = model.predict(X_test, batch_size=32, verbose=1)
+y_pred = np.load('tmp.npy')
 #y_pred = y_pred[0]
 
 log.info('drawing the computer-vision confusion matrix')
@@ -150,5 +151,9 @@ log.info('drawing the roc curves and pantau WP')
 from sklearn.metrics import roc_curve
 from tauperf.imaging.plotting import plot_roc
 plot_roc(y_test, y_pred, test['pantau'])
+
+log.info('drawing the scores')
+from tauperf.imaging.plotting import plot_scores
+plot_scores(y_pred, y_test)
 
 log.info('job finished succesfully!')

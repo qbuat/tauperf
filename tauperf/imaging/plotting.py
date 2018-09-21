@@ -253,3 +253,48 @@ def plot_roc(y_test, y_pred, y_pant):
     plt.savefig('./plots/imaging/roc_curve.pdf')
 
 
+def plot_scores(y_pred, y_true):
+    
+    for i in xrange(5):
+        y = y_pred[:,i]
+        fig = plt.figure()
+        plt.hist([
+                y[y_true == 0], 
+                y[y_true == 1], 
+                y[y_true == 2], 
+                y[y_true == 3], 
+                y[y_true == 4]],
+                 label=['1p0n', '1p1n', '1p2n', '3p0n', '3p1n'],
+                 bins=20, range=(0, 1), stacked=True, log=True)
+        plt.legend(fontsize='small', numpoints=3)
+        plt.xlabel('classifier score {0}'.format(i))
+        plt.ylabel('Number of Events')
+        fig.savefig('./plots/imaging/scores_{0}_stacked.pdf'.format(i))
+
+
+#     fig = plt.figure()
+#     plt.scatter(
+#         y_pred[:,0][y_true == 0],
+#         y_pred[:,1][y_true == 0],
+#         c='blue')
+#     fig.savefig('./plots/imaging/scores_0_1_contour.pdf'.format(i))
+        
+
+
+#     fig = plt.figure()
+#     plt.hist([
+#             y_pred[y_true == 0], 
+#             y_pred[y_true == 1], 
+#             y_pred[y_true == 2], 
+#             y_pred[y_true == 3], 
+#             y_pred[y_true == 4]],
+#              label=['1p0n', '1p1n', '1p2n', '3p0n', '3p1n'],
+#              bins=20, range=(0, 1), stacked=True, log=True)
+#     plt.xlabel('classifier score')
+#     plt.ylabel('Number of Events')
+#     plt.legend(fontsize='small', numpoints=3)
+#     plt.savefig('./plots/imaging/scores_stacked.pdf')
+
+
+
+
