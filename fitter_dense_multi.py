@@ -35,7 +35,8 @@ if args.debug:
 # data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test')
 #data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_uniform_size')
 # data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_int')
-data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_float_s1_128')
+#data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_float_s1_128')
+data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_regression')
                         
 if args.one_prong_only:
     filenames = [
@@ -81,23 +82,31 @@ if args.no_train:
     model = load_model(model_filename)
 else:
     log.info('training...')
-    from tauperf.imaging.models import dense_merged_model_topo, dense_merged_model_multi_channels, dense_merged_model_topo_upsampled
+    from tauperf.imaging.models import *
 
-    model = dense_merged_model_topo(test, n_classes=n_classes, final_activation='softmax')
+#    model = dense_merged_model_topo(test, n_classes=n_classes, final_activation='softmax')
+    model = dense_merged_model_topo_with_regression(test, n_classes=n_classes, final_activation='softmax')
     # model = dense_merged_model_multi_channels(test, n_classes=n_classes, final_activation='softmax')
     # model = dense_merged_model_topo_upsampled(test, n_classes=n_classes, final_activation='softmax')
 
     from tauperf.imaging.utils import fit_model_gen
 
-    # metrics = ['categorical_accuracy'] + 4 * []
+    metrics = ['categorical_accuracy'] + 4 * ['mean_squared_error']
+    losses = ['categorical_crossentropy'] + 4 * ['mean_squared_error']
+    loss_weights = [1., 0.1, 0.1, 0.1, 0.1]
+  
     fit_model_gen(
         model,
         filenames, features,
         val, y_val_cat,
+        reg_features,
         n_chunks=args.training_chunks,
         use_multiprocessing=False,
         workers=1,
         filename=model_filename,
+        metrics=metrics,
+        losses=losses,
+        loss_weights=loss_weights,
         overwrite=args.overwrite,
         no_train=args.no_train, 
         equal_size=args.equal_size, 
@@ -114,7 +123,7 @@ log.info('compute classifier scores')
 
 X_test  = [test[feat] for feat in features]
 y_pred = model.predict(X_test, batch_size=32, verbose=1)
-print
+#y_pred = y_pred[0]
 
 log.info('drawing the computer-vision confusion matrix')
 from sklearn.metrics import confusion_matrix

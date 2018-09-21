@@ -11,6 +11,14 @@ from keras.layers.recurrent import LSTM
 from . import log ; log = log.getChild(__name__)
 
 
+__all__ = [
+    'dense_merged_model_topo',
+    'dense_merged_model_topo_with_regression',
+    'dense_merged_model_multi_channels',
+    'dense_merged_model_topo_upsampled',
+]    
+
+
 def single_layer_model_s2(data):
     """
     """
@@ -451,12 +459,17 @@ def dense_merged_model_topo_with_regression(data, n_classes=3, final_activation=
     output_mod = Dense(n_classes, activation=final_activation)
     output_x = output_mod(merge_x)
     log.info('\t final shape         = {0}'.format(output_x._keras_shape))
-
+    
     output_pt = Dense(1, activation='sigmoid')(merge_x) 
     output_eta = Dense(1, activation='sigmoid')(merge_x) 
     output_phi = Dense(1, activation='sigmoid')(merge_x) 
     output_m = Dense(1, activation='sigmoid')(merge_x) 
 
+    # output_x.name = 'decay_class'
+    # output_pt.name = 'vis_pt'
+    # output_eta.name = 'vis_eta'
+    # output_phi.name = 'vis_phi'
+    # output_m.name = 'vis_mass'
 
     model_input = [
         tracks_input,

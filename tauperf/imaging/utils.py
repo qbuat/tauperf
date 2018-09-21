@@ -37,17 +37,16 @@ class TrainSequence(Sequence):
             'train_{0}'.format(idx), 
             equal_size=self._equal_size, 
             debug=self._debug)
-        X = [X[feat] for feat in self._features]
+        X_inputs = [X[feat] for feat in self._features]
         for f in h5files:
             f.close()
-
         if self._reg_features is None:
-            return X, to_categorical(y, len(self._files))
+            return X_inputs, to_categorical(y, len(self._files))
         else:
             outputs = [to_categorical(y, len(self._files))]
             for feat in self._reg_features:
                 outputs.append(X[feat])
-            return X, outputs
+            return X_inputs, outputs
 
 def fit_model_gen(
         model,
