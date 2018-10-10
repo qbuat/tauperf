@@ -107,8 +107,8 @@ def fit_model_gen(
                 ]
         else:
             callbacks = [
-                EarlyStopping(verbose=True, patience=10, monitor='val_loss'),
-                ModelCheckpoint(filename, monitor='val_loss', verbose=True, save_best_only=True)
+                # EarlyStopping(verbose=True, patience=10, monitor='val_decay_mode_loss'),
+                ModelCheckpoint(filename, monitor='val_decay_mode_loss', verbose=True, save_best_only=True)
                 ]
 
         validation_data = (

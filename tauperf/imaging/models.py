@@ -329,6 +329,13 @@ def dense_merged_model_topo(data, n_classes=3, final_activation='softmax'):
 def dense_merged_model_topo_with_regression(data, n_classes=3, final_activation='softmax'):
     """
     """
+    log.info('* Calo Kinematics: build the dense model')
+    pt_input = Input(shape=(1,))
+    eta_input  = Input(shape=(1,))
+    phi_input  = Input(shape=(1,))
+    kine_input  = concatenate([pt_input, eta_input, phi_input], axis=1)
+    kine_out = Dense(128)(kine_input)
+    kine_out = Reshape((1, 128))(kine_out)
 
     log.info('* Tracks: build rnn model')
     tracks_input = Input(shape=data[0]['tracks'].shape)
@@ -441,6 +448,7 @@ def dense_merged_model_topo_with_regression(data, n_classes=3, final_activation=
 
     log.info('merge layers')
     layers = [
+        kine_out,
         tracks_out,
         s1_out,
         s2_out,
@@ -451,27 +459,26 @@ def dense_merged_model_topo_with_regression(data, n_classes=3, final_activation=
 
     merge = concatenate(layers, axis=1)
     # log.info('\t merged layers shape = {0}'.format(merge._keras_shape))
-    # merge_x = LSTM(32)(merge)
-    merge_x = Flatten()(merge)
-    log.info('\t merged lstm shape   = {0}'.format(merge_x._keras_shape))
-    merge_x = Dense(512, activation='relu')(merge_x)
-    log.info('\t merged dense shape  = {0}'.format(merge_x._keras_shape))
-    output_mod = Dense(n_classes, activation=final_activation)
+    merge_x = LSTM(32)(merge)
+    # merge_x = Flatten()(merge)
+    # log.info('\t merged lstm shape   = {0}'.format(merge_x._keras_shape))
+    # merge_x = Dense(512, activation='relu')(merge_x)
+    # log.info('\t merged dense shape  = {0}'.format(merge_x._keras_shape))
+    output_mod = Dense(n_classes, activation=final_activation, name='decay_mode')
     output_x = output_mod(merge_x)
     log.info('\t final shape         = {0}'.format(output_x._keras_shape))
     
-    output_pt = Dense(1, activation='sigmoid')(merge_x) 
-    output_eta = Dense(1, activation='sigmoid')(merge_x) 
-    output_phi = Dense(1, activation='sigmoid')(merge_x) 
-    output_m = Dense(1, activation='sigmoid')(merge_x) 
+    reg_layer = Dense(1, activation='sigmoid', name='reg')
+    output_pt = reg_layer(merge_x) 
+    output_eta = reg_layer(merge_x) 
+    output_phi = reg_layer(merge_x) 
+    output_m = reg_layer(merge_x) 
 
-    # output_x.name = 'decay_class'
-    # output_pt.name = 'vis_pt'
-    # output_eta.name = 'vis_eta'
-    # output_phi.name = 'vis_phi'
-    # output_m.name = 'vis_mass'
 
     model_input = [
+        pt_input,
+        eta_input,
+        phi_input,
         tracks_input,
         s1_input,
         s2_input,

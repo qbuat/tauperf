@@ -60,7 +60,8 @@ else:
 
 print_sample_size(filenames, labels)
 
-features = ['tracks', 's1', 's2', 's3', 's4', 's5']
+kine_features = ['pt', 'eta', 'phi']
+features = kine_features + ['tracks', 's1', 's2', 's3', 's4', 's5']
 reg_features = ['true_pt', 'true_eta', 'true_phi', 'true_m']
 
 test, val, y_test, y_val = load_test_data(
@@ -122,9 +123,9 @@ log.info('testing stuff')
 log.info('compute classifier scores')
 
 X_test  = [test[feat] for feat in features]
-#y_pred = model.predict(X_test, batch_size=32, verbose=1)
-y_pred = np.load('tmp.npy')
-#y_pred = y_pred[0]
+y_pred = model.predict(X_test, batch_size=32, verbose=1)
+#y_pred = np.load('tmp.npy')
+y_pred = y_pred[0]
 
 log.info('drawing the computer-vision confusion matrix')
 from sklearn.metrics import confusion_matrix
