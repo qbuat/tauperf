@@ -532,7 +532,7 @@ def dense_merged_model_multi_channels(data, n_classes=3, final_activation='softm
     log.info('* Calo: merge inputs')
     calo_input = concatenate([s1_x, s2_x, s3_x, s4_x, s5_x])
     log.info('\t calo input shape = {0}'.format(calo_input._keras_shape))
-    calo_x = Conv2D(128, (4, 8), padding='same', activation='relu')(calo_input)
+    calo_x = Conv2D(256, (2, 2), padding='same', activation='relu')(calo_input)
     log.info('\t calo convolu shape = {0}'.format(calo_x._keras_shape))
     calo_x = MaxPooling2D((2, 4))(calo_x)
     log.info('\t calo maxpool shape = {0}'.format(calo_x._keras_shape))
@@ -545,10 +545,29 @@ def dense_merged_model_multi_channels(data, n_classes=3, final_activation='softm
     calo_out = Reshape((1, 128))(calo_x)
     log.info('\t calo final shape   = {0}'.format(calo_out._keras_shape))
 
+
+    # s1_x = Conv2D(64, (4, 6), padding='same', activation='relu')(s1_x)
+    # log.info('\t s1 convolu shape = {0}'.format(s1_x._keras_shape))
+    # s1_x = MaxPooling2D((2, 2))(s1_x)
+    # log.info('\t s1 maxpool shape = {0}'.format(s1_x._keras_shape))
+    # log.info('\t s1 input shape   = {0}'.format(s1_x._keras_shape))
+    # s1_x = Conv2D(64, (2, 6), padding='same', activation='relu')(s1_x)
+    # log.info('\t s1 convolu shape = {0}'.format(s1_x._keras_shape))
+    # s1_x = MaxPooling2D((2, 2))(s1_x)
+    # log.info('\t s1 maxpool shape = {0}'.format(s1_x._keras_shape))
+    # s1_x = Dropout(0.2)(s1_x)
+    # s1_x = Flatten()(s1_x)
+    # s1_x = Dense(128, activation='relu')(s1_x)
+    # log.info('\t s1 dense shape   = {0}'.format(s1_x._keras_shape))
+    # s1_out = Reshape((1, 128))(s1_x)
+    # log.info('\t s1 final shape   = {0}'.format(s1_out._keras_shape))
+
+
     log.info('merge layers')
     layers = [
         tracks_out,
         calo_out,
+        # s1_out,
         ]
 
     merge = concatenate(layers, axis=1)
