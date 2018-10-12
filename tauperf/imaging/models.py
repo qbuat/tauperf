@@ -331,9 +331,10 @@ def dense_merged_model_topo_with_regression(data, n_classes=3, final_activation=
     """
     log.info('* Calo Kinematics: build the dense model')
     pt_input = Input(shape=(1,))
-    eta_input  = Input(shape=(1,))
-    phi_input  = Input(shape=(1,))
-    kine_input  = concatenate([pt_input, eta_input, phi_input], axis=1)
+    eta_input = Input(shape=(1,))
+    phi_input = Input(shape=(1,))
+
+    kine_input = concatenate([pt_input, eta_input, phi_input], axis=1)
     kine_out = Dense(128)(kine_input)
     kine_out = Reshape((1, 128))(kine_out)
 
@@ -461,19 +462,21 @@ def dense_merged_model_topo_with_regression(data, n_classes=3, final_activation=
     # log.info('\t merged layers shape = {0}'.format(merge._keras_shape))
     merge_x = LSTM(32)(merge)
     # merge_x = Flatten()(merge)
-    # log.info('\t merged lstm shape   = {0}'.format(merge_x._keras_shape))
+    log.info('\t merged lstm shape   = {0}'.format(merge_x._keras_shape))
     # merge_x = Dense(512, activation='relu')(merge_x)
     # log.info('\t merged dense shape  = {0}'.format(merge_x._keras_shape))
-    output_mod = Dense(n_classes, activation=final_activation, name='decay_mode')
-    output_x = output_mod(merge_x)
-    log.info('\t final shape         = {0}'.format(output_x._keras_shape))
+    # output_mod = Dense(n_classes, activation=final_activation, name='decay_mode')
+    # output_x = output_mod(merge_x)
+    # log.info('\t final shape         = {0}'.format(output_x._keras_shape))
     
-    reg_layer = Dense(1, activation='sigmoid', name='reg')
-    output_pt = reg_layer(merge_x) 
-    output_eta = reg_layer(merge_x) 
-    output_phi = reg_layer(merge_x) 
-    output_m = reg_layer(merge_x) 
-
+    reg_layer = Dense(1, activation='linear', name='blurp')
+    output_pt = reg_layer(kine_out) 
+    log.info('\t reg_laver shape = {}'.format(output_pt._keras_shape))
+    #    output_pt = reg_layer(merge_x) 
+    # output_eta = reg_layer(merge_x) 
+    # output_phi = reg_layer(merge_x) 
+    # output_m = reg_layer(merge_x) 
+    
 
     model_input = [
         pt_input,
@@ -488,11 +491,11 @@ def dense_merged_model_topo_with_regression(data, n_classes=3, final_activation=
         ]
 
     outputs = [
-        output_x,
+        # output_x,
         output_pt,
-        output_eta,
-        output_phi,
-        output_m
+        # output_eta,
+        # output_phi,
+        # output_m
     ]
     model = Model(inputs=model_input, outputs=outputs)
 

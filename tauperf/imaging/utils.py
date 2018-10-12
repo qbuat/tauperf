@@ -43,10 +43,13 @@ class TrainSequence(Sequence):
         if self._reg_features is None:
             return X_inputs, to_categorical(y, len(self._files))
         else:
-            outputs = [to_categorical(y, len(self._files))]
-            for feat in self._reg_features:
-                outputs.append(X[feat])
-            return X_inputs, outputs
+            # outputs = [to_categorical(y, len(self._files))]
+            # if not isinstance(self._reg_features, (list, tuple)):
+            #     self._reg_features = [self._reg_features]
+            
+            # for feat in self._reg_features:
+            #     outputs.append(X[feat])
+            return X_inputs, X[self._reg_features[0]]
 
 def fit_model_gen(
         model,
@@ -57,9 +60,10 @@ def fit_model_gen(
         n_chunks=3,
         use_multiprocessing=False,
         workers=1,
-        filename='cache/crackpot.h5',
+        filename='cache/test.h5',
         metrics='categorical_accuracy',
         losses='categorical_crossentropy',
+        model_optimizer='rmsprop',
         loss_weights=1,
         overwrite=False,
         no_train=False,
@@ -82,9 +86,14 @@ def fit_model_gen(
 
         if not isinstance(loss_weights, (tuple, list)):
             loss_weights = [loss_weights]
+        
+        if reg_features != None:
+            if not isinstance(reg_features, (tuple, list)):
+                reg_features = [reg_features]
+            
 
         model.compile(
-            optimizer='rmsprop',
+            optimizer=model_optimizer,
             loss=losses,
             loss_weights=loss_weights,
             metrics=metrics)
@@ -107,13 +116,13 @@ def fit_model_gen(
                 ]
         else:
             callbacks = [
-                # EarlyStopping(verbose=True, patience=10, monitor='val_decay_mode_loss'),
-                ModelCheckpoint(filename, monitor='val_decay_mode_loss', verbose=True, save_best_only=True)
+                EarlyStopping(verbose=True, patience=10, monitor='val_loss'),
+                ModelCheckpoint(filename, monitor='val_loss', verbose=True, save_best_only=True)
                 ]
 
         validation_data = (
             [X_test[feat] for feat in features],
-            y_test if reg_features is None else [y_test] + [X_test[feat] for feat in reg_features])
+            y_test if reg_features is None else X_test[reg_features[0]])#[X_test[feat] for feat in reg_features])
 
 
         model.fit_generator(

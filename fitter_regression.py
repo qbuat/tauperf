@@ -32,10 +32,6 @@ if args.debug:
     log.warning('DEBUG MODE ACTIVATED')
     log.warning('')
 
-# data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test')
-#data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_uniform_size')
-# data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_int')
-#data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_float_s1_128')
 data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_regression')
                         
 if args.one_prong_only:
@@ -60,24 +56,23 @@ else:
 
 print_sample_size(filenames, labels)
 
-#kine_features = ['pt', 'eta', 'phi']
-#features = kine_features + ['tracks', 's1', 's2', 's3', 's4', 's5']
-#reg_features = ['true_pt', 'true_eta', 'true_phi', 'true_m']
+kine_features = ['pt', 'eta', 'phi']
+features = kine_features + ['tracks', 's1', 's2', 's3', 's4', 's5']
+reg_features = 'true_pt' #, 'true_eta', 'true_phi', 'true_m']
 
-features = ['tracks', 's1', 's2', 's3', 's4', 's5']
 
 test, val, y_test, y_val = load_test_data(
     filenames, debug=args.debug)
 y_val_cat = to_categorical(y_val, n_classes)
+y_test = test[reg_features]
 
 
 # ##############################################
 if args.dev:
-    model_filename = 'cache/multi_{0}_classes_{1}_chunks'.format(
-        n_classes, args.training_chunks)
+    model_filename = 'cache/regression_energy_{0}_chunks'.format(args.training_chunks)
     model_filename += '_{epoch:02d}_epochs.h5'
 else:
-    model_filename = 'cache/multi_{0}_classes.h5'.format(n_classes)
+    model_filename = 'cache/regression_energy.h5'
 
 if args.no_train:
     log.info('loading model')
@@ -87,26 +82,18 @@ else:
     log.info('training...')
     from tauperf.imaging.models import *
 
-    model = dense_merged_model_topo(test, n_classes=n_classes, final_activation='softmax')
-    # model = dense_merged_model_topo_with_regression(test, n_classes=n_classes, final_activation='softmax')
-    # model = dense_merged_model_multi_channels(test, n_classes=n_classes, final_activation='softmax')
-    # model = dense_merged_model_topo_upsampled(test, n_classes=n_classes, final_activation='softmax')
-
+    model = dense_merged_model_topo_with_regression(test, n_classes=n_classes, final_activation='softmax')
     from tauperf.imaging.utils import fit_model_gen
 
-#    metrics = ['categorical_accuracy'] + 4 * ['mean_squared_error']
-#    losses = ['categorical_crossentropy'] + 4 * ['mean_squared_error']
-#    loss_weights = [1., 0.1, 0.1, 0.1, 0.1]
-
-    metrics = 'categorical_accuracy' 
-    losses = 'categorical_crossentropy'
+    metrics = 'mean_squared_error'
+    losses = 'mean_squared_error'
     loss_weights = 1.
   
     fit_model_gen(
         model,
         filenames, features,
         val, y_val_cat,
-        reg_features=None,
+        reg_features=reg_features,
         n_chunks=args.training_chunks,
         use_multiprocessing=False,
         workers=1,
@@ -114,6 +101,7 @@ else:
         metrics=metrics,
         losses=losses,
         loss_weights=loss_weights,
+        model_optimizer='adam',
         overwrite=args.overwrite,
         no_train=args.no_train, 
         equal_size=args.equal_size, 
@@ -130,35 +118,37 @@ log.info('compute classifier scores')
 
 X_test  = [test[feat] for feat in features]
 y_pred = model.predict(X_test, batch_size=32, verbose=1)
+#y_pred = np.load('tmp.npy')
+#y_pred = y_pred[0]
 
-log.info('drawing the computer-vision confusion matrix')
-from sklearn.metrics import confusion_matrix
-from tauperf.imaging.plotting import plot_confusion_matrix
+# log.info('drawing the computer-vision confusion matrix')
+# from sklearn.metrics import confusion_matrix
+# from tauperf.imaging.plotting import plot_confusion_matrix
 
-cnf_mat = confusion_matrix(y_test, np.argmax(y_pred, axis=1))
-diagonal = float(np.trace(cnf_mat)) / float(np.sum(cnf_mat))
+# cnf_mat = confusion_matrix(y_test, np.argmax(y_pred, axis=1))
+# diagonal = float(np.trace(cnf_mat)) / float(np.sum(cnf_mat))
 
-from tauperf.imaging.plotting import plot_confusion_matrix, plot_roc
-plot_confusion_matrix(
-    cnf_mat, classes=labels, 
-    title='Confusion matrix, diagonal = {0:1.2f} %'.format(100 * diagonal),
-    name='plots/imaging/confusion_matrix_categorical.pdf')
+# from tauperf.imaging.plotting import plot_confusion_matrix, plot_roc
+# plot_confusion_matrix(
+#     cnf_mat, classes=labels, 
+#     title='Confusion matrix, diagonal = {0:1.2f} %'.format(100 * diagonal),
+#     name='plots/imaging/confusion_matrix_categorical.pdf')
 
-log.info('drawing the pantau confusion matrix')
-cnf_mat = confusion_matrix(y_test, test['pantau'])
-diagonal = float(np.trace(cnf_mat)) / float(np.sum(cnf_mat))
-plot_confusion_matrix(
-    cnf_mat, classes=labels, 
-    title='Pantau confusion matrix, diagonal = {0:1.2f} %'.format(100 * diagonal),
-    name='plots/imaging/confusion_matrix_reference.pdf')
+# log.info('drawing the pantau confusion matrix')
+# cnf_mat = confusion_matrix(y_test, test['pantau'])
+# diagonal = float(np.trace(cnf_mat)) / float(np.sum(cnf_mat))
+# plot_confusion_matrix(
+#     cnf_mat, classes=labels, 
+#     title='Pantau confusion matrix, diagonal = {0:1.2f} %'.format(100 * diagonal),
+#     name='plots/imaging/confusion_matrix_reference.pdf')
 
-log.info('drawing the roc curves and pantau WP')
-from sklearn.metrics import roc_curve
-from tauperf.imaging.plotting import plot_roc
-plot_roc(y_test, y_pred, test['pantau'])
+# log.info('drawing the roc curves and pantau WP')
+# from sklearn.metrics import roc_curve
+# from tauperf.imaging.plotting import plot_roc
+# plot_roc(y_test, y_pred, test['pantau'])
 
-log.info('drawing the scores')
-from tauperf.imaging.plotting import plot_scores
-plot_scores(y_pred, y_test)
+log.info('drawing the pt')
+from tauperf.imaging.plotting import plot_reg
+plot_reg(y_pred, y_test)
 
 log.info('job finished succesfully!')

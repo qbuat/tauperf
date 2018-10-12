@@ -272,7 +272,6 @@ def plot_scores(y_pred, y_true):
         plt.ylabel('Number of Events')
         fig.savefig('./plots/imaging/scores_{0}_stacked.pdf'.format(i))
 
-
     max_score = np.max(y_pred, axis=1)
     fig = plt.figure()
     plt.hist([
@@ -288,16 +287,6 @@ def plot_scores(y_pred, y_true):
     plt.ylabel('Number of Events')
     fig.savefig('./plots/imaging/scores_max_stacked.pdf'.format(i))
     
-
-
-#     for (a, b) in itertools.combinations((0, 1, 2, 3, 4), 2):
-#         fig = plt.figure()
-#         plt.scatter(
-#             y_pred[:,a][y_true == 0],
-#             y_pred[:,b][y_true == 0],
-#             c='blue')
-#         fig.savefig('./plots/imaging/scores_{0}_{1}_contour.pdf'.format(a, b))
-
     
 
 def plot_kinematics(test, pt_pred, eta_pred, phi_pred, m_pred):
@@ -318,21 +307,16 @@ def plot_kinematics(test, pt_pred, eta_pred, phi_pred, m_pred):
     fig.savefig('./plots/imaging/mass.pdf')
 
 
+def plot_reg(y_pred, y_true):
     
-#     fig = plt.figure()
-#     plt.hist([
-#             y_pred[y_true == 0], 
-#             y_pred[y_true == 1], 
-#             y_pred[y_true == 2], 
-#             y_pred[y_true == 3], 
-#             y_pred[y_true == 4]],
-#              label=['1p0n', '1p1n', '1p2n', '3p0n', '3p1n'],
-#              bins=20, range=(0, 1), stacked=True, log=True)
-#     plt.xlabel('classifier score')
-#     plt.ylabel('Number of Events')
-#     plt.legend(fontsize='small', numpoints=3)
-#     plt.savefig('./plots/imaging/scores_stacked.pdf')
-
-
+    fig = plt.figure()
+    plt.hist([y_pred[:,0],
+              y_true],
+              label=['reg', 'truth'],
+              bins=20, range=(0, 100000), stacked=False, log=True)
+    plt.legend(fontsize='small', numpoints=3)
+    plt.xlabel('target variable')
+    plt.ylabel('Number of Events')
+    fig.savefig('./plots/imaging/target.pdf')
 
 
