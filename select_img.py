@@ -1,10 +1,14 @@
+
 import os
 import numpy as np
 from h5py import File
 import tables
-from tauperf import log; log = log['/select-img']
+#from tauperf import log; log = log['/select-img']
 from tauperf.imaging.processing import process_taus
 
+import logging
+log = logging.getLogger(os.path.basename(__file__))
+log.setLevel(logging.INFO)
 
 tau_type = '1p2n'
 h5_filename = os.path.join(

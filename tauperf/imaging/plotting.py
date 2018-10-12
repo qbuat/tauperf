@@ -12,7 +12,8 @@ techlab_hosts = [
 if socket.gethostname() in techlab_hosts:
     mpl.use('PS')
 else:
-    mpl.use('TkAgg')
+    mpl.use('PS')
+#    mpl.use('TkAgg')
 
 
 import matplotlib.pyplot as plt
@@ -272,15 +273,52 @@ def plot_scores(y_pred, y_true):
         fig.savefig('./plots/imaging/scores_{0}_stacked.pdf'.format(i))
 
 
-#     fig = plt.figure()
-#     plt.scatter(
-#         y_pred[:,0][y_true == 0],
-#         y_pred[:,1][y_true == 0],
-#         c='blue')
-#     fig.savefig('./plots/imaging/scores_0_1_contour.pdf'.format(i))
-        
+    max_score = np.max(y_pred, axis=1)
+    fig = plt.figure()
+    plt.hist([
+            max_score[y_true == 0], 
+            max_score[y_true == 1], 
+            max_score[y_true == 2], 
+            max_score[y_true == 3], 
+            max_score[y_true == 4]],
+             label=['1p0n', '1p1n', '1p2n', '3p0n', '3p1n'],
+             bins=20, range=(0, 1), stacked=True, log=True)
+    plt.legend(fontsize='small', numpoints=3)
+    plt.xlabel('maximum score'.format(i))
+    plt.ylabel('Number of Events')
+    fig.savefig('./plots/imaging/scores_max_stacked.pdf'.format(i))
+    
 
 
+#     for (a, b) in itertools.combinations((0, 1, 2, 3, 4), 2):
+#         fig = plt.figure()
+#         plt.scatter(
+#             y_pred[:,a][y_true == 0],
+#             y_pred[:,b][y_true == 0],
+#             c='blue')
+#         fig.savefig('./plots/imaging/scores_{0}_{1}_contour.pdf'.format(a, b))
+
+    
+
+def plot_kinematics(test, pt_pred, eta_pred, phi_pred, m_pred):
+    fig = plt.figure()
+    plt.hist([test['true_pt'] / 1000., pt_pred], bins=20, range=(0., 200.))
+    fig.savefig('./plots/imaging/pt.pdf')
+
+    fig = plt.figure()
+    plt.hist([test['true_eta'], eta_pred], bins=20, range=(-1, 1))
+    fig.savefig('./plots/imaging/eta.pdf')
+
+    fig = plt.figure()
+    plt.hist([test['true_phi'], phi_pred], bins=20, range=(-1, 1))
+    fig.savefig('./plots/imaging/phi.pdf')
+
+    fig = plt.figure()
+    plt.hist([test['true_m'] / 1000., m_pred], bins=20, range=(0, 2))
+    fig.savefig('./plots/imaging/mass.pdf')
+
+
+    
 #     fig = plt.figure()
 #     plt.hist([
 #             y_pred[y_true == 0], 

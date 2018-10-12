@@ -209,9 +209,7 @@ def process_taus(
                 import matplotlib as mpl; mpl.use('PS')
                 import matplotlib.pyplot as plt
                 from matplotlib.colors import LogNorm
-                for i, (im, im_repeat) in enumerate(zip(
-                        [s1, s2, s3, s4, s5],
-                        [s1_repeat, s2_repeat, s3_repeat, s4_repeat, s5_repeat])):
+                for i, im in enumerate([s1, s2, s3, s4, s5]):
                     fig = plt.figure()
                     plt.imshow(
                         im, extent=[-0.2, 0.2, -0.2, 0.2], cmap=plt.cm.Reds,
@@ -225,16 +223,16 @@ def process_taus(
                     fig.clf()
                     plt.close()
                 
-                    fig = plt.figure()
-                    plt.imshow(
-                        im_repeat, extent=[-0.2, 0.2, -0.2, 0.2], cmap=plt.cm.Reds,
-                        interpolation='nearest',
-                        norm=LogNorm(0.0001, 1))
-                    plt.colorbar()
-                    plt.title('{0}: image {1} sampling {2}'.format(suffix, index, i + 1))
-                    fig.savefig('s{0}_repeat_tau_{1}.pdf'.format(i + 1, index))
-                    fig.clf()
-                    plt.close()
+#                     fig = plt.figure()
+#                     plt.imshow(
+#                         im_repeat, extent=[-0.2, 0.2, -0.2, 0.2], cmap=plt.cm.Reds,
+#                         interpolation='nearest',
+#                         norm=LogNorm(0.0001, 1))
+#                     plt.colorbar()
+#                     plt.title('{0}: image {1} sampling {2}'.format(suffix, index, i + 1))
+#                     fig.savefig('s{0}_repeat_tau_{1}.pdf'.format(i + 1, index))
+#                     fig.clf()
+#                     plt.close()
 
         # flush the table on disk
         table.flush()
