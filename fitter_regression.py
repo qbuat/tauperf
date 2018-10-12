@@ -85,8 +85,8 @@ else:
     model = dense_merged_model_topo_with_regression(test, n_classes=n_classes, final_activation='softmax')
     from tauperf.imaging.utils import fit_model_gen
 
-    metrics = 'mean_squared_error'
-    losses = 'mean_squared_error'
+    metrics = 'mean_absolute_percentage_error'
+    losses = 'mean_absolute_percentage_error'
     loss_weights = 1.
   
     fit_model_gen(
@@ -146,9 +146,9 @@ y_pred = model.predict(X_test, batch_size=32, verbose=1)
 # from sklearn.metrics import roc_curve
 # from tauperf.imaging.plotting import plot_roc
 # plot_roc(y_test, y_pred, test['pantau'])
-
+del X_test
 log.info('drawing the pt')
 from tauperf.imaging.plotting import plot_reg
-plot_reg(y_pred, y_test)
+plot_reg(y_pred, y_test, test['pt'])
 
 log.info('job finished succesfully!')

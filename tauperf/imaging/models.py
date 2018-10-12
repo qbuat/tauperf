@@ -460,8 +460,8 @@ def dense_merged_model_topo_with_regression(data, n_classes=3, final_activation=
 
     merge = concatenate(layers, axis=1)
     # log.info('\t merged layers shape = {0}'.format(merge._keras_shape))
-    merge_x = LSTM(32)(merge)
-    # merge_x = Flatten()(merge)
+    # merge_x = LSTM(32)(merge)
+    merge_x = Flatten()(merge)
     log.info('\t merged lstm shape   = {0}'.format(merge_x._keras_shape))
     # merge_x = Dense(512, activation='relu')(merge_x)
     # log.info('\t merged dense shape  = {0}'.format(merge_x._keras_shape))
@@ -470,7 +470,7 @@ def dense_merged_model_topo_with_regression(data, n_classes=3, final_activation=
     # log.info('\t final shape         = {0}'.format(output_x._keras_shape))
     
     reg_layer = Dense(1, activation='linear', name='blurp')
-    output_pt = reg_layer(kine_out) 
+    output_pt = reg_layer(merge_x) 
     log.info('\t reg_laver shape = {}'.format(output_pt._keras_shape))
     #    output_pt = reg_layer(merge_x) 
     # output_eta = reg_layer(merge_x) 

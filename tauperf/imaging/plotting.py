@@ -307,16 +307,35 @@ def plot_kinematics(test, pt_pred, eta_pred, phi_pred, m_pred):
     fig.savefig('./plots/imaging/mass.pdf')
 
 
-def plot_reg(y_pred, y_true):
+def plot_reg(pred, true, calo):
     
     fig = plt.figure()
-    plt.hist([y_pred[:,0],
-              y_true],
-              label=['reg', 'truth'],
+    plt.hist([pred[:,0], true, calo],
+              label=['reg', 'truth', 'calo'],
               bins=20, range=(0, 100000), stacked=False, log=True)
     plt.legend(fontsize='small', numpoints=3)
     plt.xlabel('target variable')
     plt.ylabel('Number of Events')
     fig.savefig('./plots/imaging/target.pdf')
 
+    fig = plt.figure()
 
+    diff_pred = (pred[:,0] - true) / true
+    diff_calo = (calo - true) / true
+    plt.hist([diff_pred, diff_calo],
+             label=['reg', 'calo'],
+             bins=40, range=(-1, 1), stacked=False)
+    plt.legend(fontsize='small', numpoints=3)
+    plt.xlabel('(estimator - truth) / truth')
+    plt.ylabel('Number of Events')
+    fig.savefig('./plots/imaging/target_diff.pdf')
+
+    # print np.mean(diff_pred), np.mean(diff_calo)
+    # print np.quantile(np.abs(diff_pred), 0.68), np.quantile(np.abs(diff_calo), 0.68)
+    # del diff_pred
+    # del diff_calo
+    # arr = np.array([true, (pred - true) / true, (calo - true) / true]).T
+    # arr = np.sort(arr)
+    # arr = np.array_split(arr, 10)
+    # for a in arr:
+    #     print np.mean(a[:,0]), np.mean(a[:,1]), np.mean(a[:,1])
