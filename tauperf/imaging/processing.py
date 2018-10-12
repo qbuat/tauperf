@@ -25,6 +25,7 @@ class Image(tables.IsDescription):
 #     s5 = tables.Float32Col(shape=(32, 128), dflt=0.0)
 
     tracks = tables.Float64Col(shape=(15, 4))
+    e = tables.Float64Col()
     pt = tables.Float64Col()
     eta = tables.Float64Col()
     phi = tables.Float64Col()
@@ -35,8 +36,8 @@ class Image(tables.IsDescription):
     true_eta = tables.Float64Col()
     true_phi = tables.Float64Col()
     true_m = tables.Float64Col()
+    alpha_e = tables.Float64Col()
 
-    
 def locate_index(index, training_tables, test_table, val_table):
     if np.isin(index, test_table):
         return 'test'
@@ -193,6 +194,7 @@ def process_taus(
             image['s4'] = s4#_repeat
             image['s5'] = s5#_repeat
             image['tracks'] = tau_tracks_simple(rec)
+            image['e'] = rec['off_pt'] * np.cosh(rec['off_eta'])
             image['pt'] = rec['off_pt']
             image['eta'] = rec['off_eta']
             image['phi'] = rec['off_phi']
@@ -203,6 +205,7 @@ def process_taus(
             image['true_eta'] = rec['true_eta']
             image['true_phi'] = rec['true_phi']
             image['true_m'] = rec['true_m']
+            image['alpha_e'] = rec['true_pt'] / (rec['off_pt'] * np.cosh(rec['off_eta']))
             image.append()
 
             if do_plot:
