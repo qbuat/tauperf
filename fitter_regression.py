@@ -32,7 +32,7 @@ if args.debug:
     log.warning('DEBUG MODE ACTIVATED')
     log.warning('')
 
-data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_regression')
+data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_regression_2')
                         
 if args.one_prong_only:
     filenames = [
@@ -58,7 +58,7 @@ print_sample_size(filenames, labels)
 
 kine_features = ['pt', 'eta', 'phi']
 features = kine_features + ['tracks', 's1', 's2', 's3', 's4', 's5']
-reg_features = 'true_pt' #, 'true_eta', 'true_phi', 'true_m']
+reg_features = 'alpha_e' #, 'true_eta', 'true_phi', 'true_m']
 
 
 test, val, y_test, y_val = load_test_data(
@@ -118,8 +118,7 @@ log.info('compute classifier scores')
 
 X_test  = [test[feat] for feat in features]
 y_pred = model.predict(X_test, batch_size=32, verbose=1)
-#y_pred = np.load('tmp.npy')
-#y_pred = y_pred[0]
+#y_pred = np.load('regression.npy')
 
 # log.info('drawing the computer-vision confusion matrix')
 # from sklearn.metrics import confusion_matrix
@@ -149,6 +148,6 @@ y_pred = model.predict(X_test, batch_size=32, verbose=1)
 del X_test
 log.info('drawing the pt')
 from tauperf.imaging.plotting import plot_reg
-plot_reg(y_pred, y_test, test['pt'])
+plot_reg(y_pred, y_test, test['pt'], test['e'])
 
 log.info('job finished succesfully!')

@@ -307,10 +307,12 @@ def plot_kinematics(test, pt_pred, eta_pred, phi_pred, m_pred):
     fig.savefig('./plots/imaging/mass.pdf')
 
 
-def plot_reg(pred, true, calo):
+def plot_reg(pred, true, calo, ene):
     
+    reg = pred[:,0] * ene
+
     fig = plt.figure()
-    plt.hist([pred[:,0], true, calo],
+    plt.hist([reg, true, calo],
               label=['reg', 'truth', 'calo'],
               bins=20, range=(0, 100000), stacked=False, log=True)
     plt.legend(fontsize='small', numpoints=3)
@@ -319,8 +321,7 @@ def plot_reg(pred, true, calo):
     fig.savefig('./plots/imaging/target.pdf')
 
     fig = plt.figure()
-
-    diff_pred = (pred[:,0] - true) / true
+    diff_pred = (reg - true) / true
     diff_calo = (calo - true) / true
     plt.hist([diff_pred, diff_calo],
              label=['reg', 'calo'],
@@ -330,12 +331,53 @@ def plot_reg(pred, true, calo):
     plt.ylabel('Number of Events')
     fig.savefig('./plots/imaging/target_diff.pdf')
 
-    # print np.mean(diff_pred), np.mean(diff_calo)
-    # print np.quantile(np.abs(diff_pred), 0.68), np.quantile(np.abs(diff_calo), 0.68)
-    # del diff_pred
-    # del diff_calo
-    # arr = np.array([true, (pred - true) / true, (calo - true) / true]).T
-    # arr = np.sort(arr)
-    # arr = np.array_split(arr, 10)
-    # for a in arr:
-    #     print np.mean(a[:,0]), np.mean(a[:,1]), np.mean(a[:,1])
+    plt.yscale('log')
+    fig.savefig('./plots/imaging/target_diff_log.pdf')
+
+#     print np.mean(diff_pred), np.mean(diff_calo)
+#     print np.quantile(np.abs(diff_pred), 0.68), np.quantile(np.abs(diff_calo), 0.68)
+#     arr = np.array([true, diff_pred, diff_calo]).T
+#     print arr[0]
+#     arr = np.sort(arr, axis=0)
+#     arr = np.array_split(arr, 20)
+    
+#     x = np.array([
+#             np.mean(a[:,0]) / 1000. for a in arr])
+
+#     mean_calo = np.array([
+#             np.mean(a[:,2]) for a in arr])
+#     mean_pred = np.array([
+#             np.mean(a[:,1]) for a in arr])
+
+#     res_68_calo = np.array([
+#             np.quantile(np.abs(a[:,2]), 0.68) for a in arr])
+#     res_68_pred = np.array([
+#             np.quantile(np.abs(a[:,1]), 0.68) for a in arr])
+
+#     fig = plt.figure()
+#     plt.plot(x, res_68_calo, 'bs', label='calo')
+#     plt.plot(x, res_68_pred, 'g^', label='regression')
+#     plt.legend(fontsize='small', numpoints=3)
+#     plt.xlim(0, 200)
+#     plt.xlabel('True transverse momentum [GeV]')
+#     plt.ylabel('Relative resolution')
+#     fig.savefig('./plots/imaging/resolution.pdf')
+#     fig = plt.figure()
+
+#     plt.plot(x, mean_calo, 'bs', label='calo')
+#     plt.plot(x, mean_pred, 'g^', label='regression')
+#     plt.legend(fontsize='small', numpoints=3)
+#     plt.xlim(0, 200)
+#     plt.xlabel('True transverse momentum [GeV]')
+#     plt.ylabel('< estimate - true / true >')
+#     fig.savefig('./plots/imaging/mean.pdf')
+
+#     print 'pt   |\t mean \t| mean (corr) \t | quantile \t | quantile (cor)'
+#     for a in arr:
+#         pt = np.mean(a[:,0]) / 1000.
+#         mean = np.mean(a[:,1])
+#         mean_corr = np.mean(a[:,1] - mean)
+#         quantile = np.quantile(np.abs(a[:,1]), 0.68)
+#         quantile_corr = np.quantile(np.abs(a[:,1] -  np.mean(a[:,1])), 0.68)
+#         print '{0:1.3f} | {1:1.3f} | {2:1.3f} | {3:1.3f} | {4:1.3f}'.format(
+#             pt, mean, mean_corr, quantile, quantile_corr)
