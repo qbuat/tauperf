@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+import os
+import argparse
+import logging
+import ROOT
+
+
+logging.basicConfig()
+log = logging.getLogger(os.path.basename(__file__))
+log.setLevel(logging.INFO)
+
+if __name__ == '__main__':
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inputfile')
+    args = parser.parse_args()
+
+    input_list = []
+    with open(args.inputfile) as f:
+        lines = []
+        for l in f.readlines():
+            lines.append(l.strip('\n'))
+        if len(lines) != 1:
+            log.warning('there are {} lines in the input file'.format(len(lines)))
+
+        files = lines[0].split(',')
+        for f in files:
+            input_list.append(f)
+
+
+    sel_1p0n = 'true_decaymode == 0 && abs(off_eta) < 1.1'
+    sel_1p1n = 'true_decaymode == 1 && abs(off_eta) < 1.1'
+    sel_1p2n = 'true_decaymode == 2 && abs(off_eta) < 1.1'
+    sel_3p0n = 'true_decaymode == 3 && abs(off_eta) < 1.1'
+    sel_3p1n = 'true_decaymode == 4 && abs(off_eta) < 1.1'
+
+    # rfile_name = args.rfile
+    # log.info('read {0}'.format(rfile_name))
+    # new_rfile_name  = rfile_name.replace('.root', '.selected.root')
+    # log.info(new_rfile_name)
+    # rfile = ROOT.TFile(rfile_name, 'read')
+    # tree = rfile.Get('tau')
+    # print tree
+    tree = ROOT.TChain('tau')
+    for input_file in input_list:
+        log.info('Append to chain: {}'.format(input_file))
+        tree.Add(input_file)
+    log.info('Total numver of entries = {}'.format(tree.GetEntries()))
+    new_rfile = ROOT.TFile('split.root', 'recreate')
+
+    log.info('Selecting 3p1n ...')
+    tree_3p1n = tree.CopyTree(sel_3p1n)
+    tree_3p1n.SetName('tree_3p1n')
+    tree_3p1n.Write()
+
+    log.info('Selecting 3p0n ...')
+    tree_3p0n = tree.CopyTree(sel_3p0n)
+    tree_3p0n.SetName('tree_3p0n')
+    tree_3p0n.Write()
+    
+    log.info('Selecting 1p2n ...')
+    tree_1p2n = tree.CopyTree(sel_1p2n)
+    tree_1p2n.SetName('tree_1p2n')
+    tree_1p2n.Write()
+    
+    log.info('Selecting 1p1n ...')
+    tree_1p1n = tree.CopyTree(sel_1p1n)
+    tree_1p1n.SetName('tree_1p1n')
+    tree_1p1n.Write()
+    
+    log.info('Selecting 1p0n ...')
+    tree_1p0n = tree.CopyTree(sel_1p0n)
+    tree_1p0n.SetName('tree_1p0n')
+    tree_1p0n.Write()
+    
+    new_rfile.Close()
+    # rfile.Close()
+

@@ -58,7 +58,7 @@ print_sample_size(filenames, labels)
 
 kine_features = ['pt', 'eta', 'phi']
 features = kine_features + ['tracks', 's1', 's2', 's3', 's4', 's5']
-reg_features = 'alpha_e' #, 'true_eta', 'true_phi', 'true_m']
+reg_features = 'alpha_e' #'true_pt', 'true_eta', 'true_phi', 'true_m']
 
 
 test, val, y_test, y_val = load_test_data(
@@ -145,9 +145,8 @@ y_pred = model.predict(X_test, batch_size=32, verbose=1)
 # from sklearn.metrics import roc_curve
 # from tauperf.imaging.plotting import plot_roc
 # plot_roc(y_test, y_pred, test['pantau'])
-del X_test
 log.info('drawing the pt')
 from tauperf.imaging.plotting import plot_reg
-plot_reg(y_pred, y_test, test['pt'], test['e'])
+plot_reg(y_pred, test['true_pt'], test['pt'], test['e'])
 
 log.info('job finished succesfully!')

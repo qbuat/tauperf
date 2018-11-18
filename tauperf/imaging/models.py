@@ -449,7 +449,7 @@ def dense_merged_model_topo_with_regression(data, n_classes=3, final_activation=
 
     log.info('merge layers')
     layers = [
-        kine_out,
+        # kine_out,
         tracks_out,
         s1_out,
         s2_out,

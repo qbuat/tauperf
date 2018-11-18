@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-from tauperf.imaging.processing import process_taus
+#from tauperf.imaging.processing import process_taus
+from tauperf.imaging.root_processing import process_taus
+import ROOT
 
 import os
 import numpy as np
@@ -26,11 +28,11 @@ def create_image_data(
     log.info('open h5 file {0}'.format(filename))
 
     #     h5file = File(filename, mode='r')
-    h5file = tables.open_file(filename)
+    # h5file = tables.open_file(filename)
     dir_name = os.path.dirname(filename)
 
     #     records = h5file.get('tree_' + tau_type)
-    records = getattr(h5file.root, 'tree_' + tau_type)
+    # records = getattr(h5file.root, 'tree_' + tau_type)
 
 
     out_name = os.path.join(outdir, 'images_new_{0}.h5'.format(tau_type))
@@ -38,26 +40,44 @@ def create_image_data(
     out_h5 = tables.open_file(out_name, mode='w')
     # group = out_h5.create_group("/", 'data', 'yup')
 
-    log.info('process {0}: {1} entries'.format(tau_type, len(records)))
+    # log.info('process {0}: {1} entries'.format(tau_type, len(records)))
     if nentries is not None:
         log.info('.. actually only running on {0} entries'.format(nentries))
+
     log.info('chunk the training sample in {0}'.format(n_chunks))
     log.info('')
-    process_taus(
-        out_h5, records, 
-        suffix=tau_type, 
-        nentries=nentries,
-        n_chunks=n_chunks,
-        do_plot=do_plot,
-        show_progress=show_progress)
+    for ifile, rfilename in enumerate(os.listdir(filename)):
+        # if ifile < 4:
+        #     continue
+        # if ifile > 7:
+        #     break
+        log.info('opening {}'.format(rfilename))
+        rfile = ROOT.TFile(os.path.join(filename, rfilename))
+        records = rfile.Get('tree_' + tau_type)
+        process_taus(
+            out_h5, records, ifile,
+            suffix=tau_type, 
+            nentries=nentries,
+            n_chunks=n_chunks,
+            do_plot=do_plot,
+            show_progress=show_progress)
+        rfile.Close()
+    # process_taus(
+    #     out_h5, records,
+    #     suffix=tau_type, 
+    #     nentries=nentries,
+    #     n_chunks=n_chunks,
+    #     do_plot=do_plot,
+    #     show_progress=show_progress)
     log.info('')
     log.info('close h5 file {0}'.format(out_name))
     out_h5.flush()
     out_h5.close()
 
-    log.info('close h5 file {0}'.format(filename))
-    h5file.close()
-    log.info('')
+    #log.info('close h5 file {0}'.format(filename))
+    #    h5file.close()
+    # rfile.Close()
+    #log.info('')
     
 
 
