@@ -24,7 +24,7 @@ class Image(tables.IsDescription):
 #     s4 = tables.Float32Col(shape=(32, 128), dflt=0.0)
 #     s5 = tables.Float32Col(shape=(32, 128), dflt=0.0)
 
-    tracks = tables.Float64Col(shape=(50, 4))
+    tracks = tables.Float64Col(shape=(15, 4))
     e = tables.Float64Col()
     pt = tables.Float64Col()
     eta = tables.Float64Col()
@@ -71,7 +71,7 @@ def tau_tracks_simple(evt):
     """
     Laser was here.
     """
-    maxtracks = 50
+    maxtracks = 15
 
     imp   = []
     deta  = []
@@ -88,12 +88,16 @@ def tau_tracks_simple(evt):
 
     tau_ene = evt.off_e
 
+    itrack = 0
     for (p, e, f, c) in zip(rp, rdeta, rdphi, rclass):
+        itrack +=1
+        if itrack == maxtracks:
+            break
         imp.append(p / tau_ene)
         deta.append(e)
         dphi.append(f)
         classes.append(c)
-
+        
     imp   += [0] * (maxtracks - len(imp))
     deta  += [0] * (maxtracks - len(deta))
     dphi  += [0] * (maxtracks - len(dphi))
@@ -126,55 +130,34 @@ def process_taus(
         out_h5.create_group('/', 'data', 'yup')
     group = out_h5.root.data
 
-    # take 20% of the sample for validation and testing
-    train_ind, test_ind = model_selection.train_test_split(
-        xrange(nentries), test_size=0.2, random_state=42)
-    val_ind, test_ind = np.split(test_ind, [len(test_ind) / 2])
-
-    # chunk training
-    train_ind = np.array_split(train_ind, n_chunks)
-
-    table_names = []
     filters = tables.Filters(complevel=1)
-    # create training tables
-    for it, _ in enumerate(train_ind):
-        table_name = 'train_{0}'.format(n_chunks * tree_number + it)
+
+    table_name = 'table_{}'.format(tree_number)
+    if not group.__contains__(table_name):
+        log.info('Creating {} for {} taus'.format(table_name, suffix))
         out_h5.create_table(group, table_name, Image, filters=filters)
-        table_names.append(table_name)
 
-    if not group.__contains__('test'):
-        out_h5.create_table(group, 'test', Image, filters=filters)
-    if not group.__contains__('val'):
-        out_h5.create_table(group, 'val', Image, filters=filters)
-
-    table_names += ['test', 'val']
-
-    for name, indices in zip(table_names, train_ind + [test_ind, val_ind]):
-        if show_progress:
+    table = getattr(out_h5.root.data, table_name)
+    log.info('Filling table {0} for {1} taus with {2} entries '.format(table_name, suffix, nentries))
+    for entry in xrange(nentries):
+        if show_progress: 
             print
-
-        log.info('Filling table {0} for {1} taus'.format(name, suffix))
-        table = getattr(out_h5.root.data, name)
-        image = table.row
-
-        for i_ind, index in enumerate(indices):
-
-            if show_progress: 
-                print_progress(i_ind, len(indices), prefix='Progress')
-            # protect against pathologic arrays
-            try:
-                tree.GetEntry(index)
+            print_progress(entry, nentries, prefix='Progress')
+            print
+        # protect against pathologic arrays
+        try:
+            tree.GetEntry(entry)
                 # rec = records[index]
-            except:
-                log.warning('record array is broken')
-                continue
+        except:
+            log.warning('record array is broken')
+            continue
 
-            # get the image for each layer
-            s1 = tau_topo_image(tree, cal_layer=1, width=Image.columns['s1'].shape[1], height=Image.columns['s1'].shape[0])
-            s2 = tau_topo_image(tree, cal_layer=2, width=Image.columns['s2'].shape[1], height=Image.columns['s2'].shape[0])
-            s3 = tau_topo_image(tree, cal_layer=3, width=Image.columns['s3'].shape[1], height=Image.columns['s3'].shape[0])
-            s4 = tau_topo_image(tree, cal_layer=12,width=Image.columns['s4'].shape[1], height=Image.columns['s4'].shape[0])
-            s5 = tau_topo_image(tree, cal_layer=13,width=Image.columns['s5'].shape[1], height=Image.columns['s5'].shape[0])
+        # get the image for each layer
+        s1 = tau_topo_image(tree, cal_layer=1, width=Image.columns['s1'].shape[1], height=Image.columns['s1'].shape[0])
+        s2 = tau_topo_image(tree, cal_layer=2, width=Image.columns['s2'].shape[1], height=Image.columns['s2'].shape[0])
+        s3 = tau_topo_image(tree, cal_layer=3, width=Image.columns['s3'].shape[1], height=Image.columns['s3'].shape[0])
+        s4 = tau_topo_image(tree, cal_layer=12,width=Image.columns['s4'].shape[1], height=Image.columns['s4'].shape[0])
+        s5 = tau_topo_image(tree, cal_layer=13,width=Image.columns['s5'].shape[1], height=Image.columns['s5'].shape[0])
 
             # making all the images as (32 X 128)
 #             s1_repeat = np.repeat(s1, 8, axis=0)
@@ -185,57 +168,46 @@ def process_taus(
 #             s5_repeat = np.repeat(s5, 2, axis=0)
 #             s5_repeat = np.repeat(s5_repeat, 8, axis=1)
 
-            image['s1'] = s1#_repeat
-            image['s2'] = s2#_repeat
-            image['s3'] = s3#_repeat
-            image['s4'] = s4#_repeat
-            image['s5'] = s5#_repeat
-            image['tracks'] = tau_tracks_simple(tree)
-            image['e'] = tree.off_e
-            image['pt'] = tree.off_pt
-            image['eta'] = tree.off_eta
-            image['phi'] = tree.off_phi
-            image['mu'] = tree.averageintpercrossing
-            image['pantau'] = tree.off_decaymode
-            image['truthmode'] = tree.true_decaymode
-            image['true_pt'] = tree.true_pt
-            image['true_eta'] = tree.true_eta
-            image['true_phi'] = tree.true_phi
-            image['true_m'] = tree.true_m
-            image['alpha_e'] = tree.true_alpha_e
-            image.append()
+        table.row['s1'] = s1#_repeat
+        table.row['s2'] = s2#_repeat
+        table.row['s3'] = s3#_repeat
+        table.row['s4'] = s4#_repeat
+        table.row['s5'] = s5#_repeat
+        table.row['tracks'] = tau_tracks_simple(tree)
+        table.row['e'] = tree.off_e
+        table.row['pt'] = tree.off_pt
+        table.row['eta'] = tree.off_eta
+        table.row['phi'] = tree.off_phi
+        table.row['mu'] = tree.averageintpercrossing
+        table.row['pantau'] = tree.off_decaymode
+        table.row['truthmode'] = tree.true_decaymode
+        table.row['true_pt'] = tree.true_pt
+        table.row['true_eta'] = tree.true_eta
+        table.row['true_phi'] = tree.true_phi
+        table.row['true_m'] = tree.true_m
+        table.row['alpha_e'] = tree.true_alpha_e
+        table.row.append()
 
-            if do_plot:
-                import matplotlib as mpl; mpl.use('PS')
-                import matplotlib.pyplot as plt
-                from matplotlib.colors import LogNorm
-                for i, im in enumerate([s1, s2, s3, s4, s5]):
-                    fig = plt.figure()
-                    plt.imshow(
-                        im, extent=[-0.2, 0.2, -0.2, 0.2], cmap=plt.cm.Reds,
-                        interpolation='nearest',
-                        norm=LogNorm(0.0001, 1))
-                    plt.colorbar()
-                    plt.xlabel('eta')
-                    plt.ylabel('phi')
-                    plt.title('{0}: image {1} sampling {2}'.format(suffix, index, i + 1))
-                    fig.savefig('s{0}_tau_{1}.pdf'.format(i + 1, index))
-                    fig.clf()
-                    plt.close()
-                
-#                     fig = plt.figure()
-#                     plt.imshow(
-#                         im_repeat, extent=[-0.2, 0.2, -0.2, 0.2], cmap=plt.cm.Reds,
-#                         interpolation='nearest',
-#                         norm=LogNorm(0.0001, 1))
-#                     plt.colorbar()
-#                     plt.title('{0}: image {1} sampling {2}'.format(suffix, index, i + 1))
-#                     fig.savefig('s{0}_repeat_tau_{1}.pdf'.format(i + 1, index))
-#                     fig.clf()
-#                     plt.close()
+        if do_plot:
+            import matplotlib as mpl; mpl.use('PS')
+            import matplotlib.pyplot as plt
+            from matplotlib.colors import LogNorm
+            for i, im in enumerate([s1, s2, s3, s4, s5]):
+                fig = plt.figure()
+                plt.imshow(
+                    im, extent=[-0.2, 0.2, -0.2, 0.2], cmap=plt.cm.Reds,
+                    interpolation='nearest',
+                    norm=LogNorm(0.0001, 1))
+                plt.colorbar()
+                plt.xlabel('eta')
+                plt.ylabel('phi')
+                plt.title('{0}: image {1} sampling {2}'.format(suffix, index, i + 1))
+                fig.savefig('s{0}_tau_{1}.pdf'.format(i + 1, index))
+                fig.clf()
+                plt.close()
 
-        # flush the table on disk
-        table.flush()
+    # flush the table on disk
+    table.flush()
 
 
 

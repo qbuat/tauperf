@@ -36,7 +36,7 @@ if args.debug:
 #data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_uniform_size')
 # data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_int')
 #data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_float_s1_128')
-data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_regression')
+data_dir = os.path.join(os.getenv('DATA_AREA'), 'v14/test_aod_1')
                         
 if args.one_prong_only:
     filenames = [

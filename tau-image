@@ -47,10 +47,6 @@ def create_image_data(
     log.info('chunk the training sample in {0}'.format(n_chunks))
     log.info('')
     for ifile, rfilename in enumerate(os.listdir(filename)):
-        # if ifile < 4:
-        #     continue
-        # if ifile > 7:
-        #     break
         log.info('opening {}'.format(rfilename))
         rfile = ROOT.TFile(os.path.join(filename, rfilename))
         records = rfile.Get('tree_' + tau_type)
