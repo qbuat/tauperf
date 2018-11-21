@@ -14,27 +14,29 @@ class TrainSequence(Sequence):
     def __init__(
             self, 
             filenames, 
+            train_indices,
             n_chunks, 
             features, 
             reg_features=None,
             equal_size=False, 
             debug=False):
-
         self._files = filenames
         self._features = features
         self._reg_features = reg_features
         self.n_chunks = n_chunks
         self._equal_size = equal_size
         self._debug = debug
+        self._train_indices = train_indices
 
     def __len__(self):
         return self.n_chunks
 
     def __getitem__(self, idx):
         h5files = [tables.open_file(f) for f in self._files]
+        index = self._train_indices[idx]
         X, y = get_X_y(
             h5files, 
-            'train_{0}'.format(idx), 
+            'table_{0}'.format(index), 
             equal_size=self._equal_size, 
             debug=self._debug)
         X_inputs = [X[feat] for feat in self._features]
@@ -55,6 +57,7 @@ def fit_model_gen(
         model,
         h5files, 
         features,
+        train_indices,
         X_test, y_test, 
         reg_features=None,
         n_chunks=3,
@@ -101,6 +104,7 @@ def fit_model_gen(
         log.info('Create the sequence')
         train_sequence = TrainSequence(
             h5files, 
+            train_indices,
             n_chunks, 
             features, 
             reg_features=reg_features, 

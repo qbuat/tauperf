@@ -44,8 +44,8 @@ def create_image_data(
     if nentries is not None:
         log.info('.. actually only running on {0} entries'.format(nentries))
 
-    log.info('chunk the training sample in {0}'.format(n_chunks))
-    log.info('')
+#     log.info('chunk the training sample in {0}'.format(n_chunks))
+#     log.info('')
     for ifile, rfilename in enumerate(os.listdir(filename)):
         log.info('opening {}'.format(rfilename))
         rfile = ROOT.TFile(os.path.join(filename, rfilename))

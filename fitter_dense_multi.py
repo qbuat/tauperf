@@ -2,7 +2,7 @@ import os
 import numpy as np
 from argparse import ArgumentParser
 from keras.utils.np_utils import to_categorical
-from tauperf.imaging.load import load_test_data, print_sample_size
+from tauperf.imaging.load import load_test_data, prepare_samples
 
 
 import logging
@@ -58,7 +58,7 @@ else:
     n_classes = 5
 
 
-print_sample_size(filenames, labels)
+train_ind, test_ind, val_ind = prepare_samples(filenames, labels)
 
 #kine_features = ['pt', 'eta', 'phi']
 #features = kine_features + ['tracks', 's1', 's2', 's3', 's4', 's5']
@@ -67,7 +67,7 @@ print_sample_size(filenames, labels)
 features = ['tracks', 's1', 's2', 's3', 's4', 's5']
 
 test, val, y_test, y_val = load_test_data(
-    filenames, debug=args.debug)
+    filenames, test_ind, val_ind, debug=args.debug)
 y_val_cat = to_categorical(y_val, n_classes)
 
 
@@ -105,6 +105,7 @@ else:
     fit_model_gen(
         model,
         filenames, features,
+        train_ind,
         val, y_val_cat,
         reg_features=None,
         n_chunks=args.training_chunks,
