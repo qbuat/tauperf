@@ -18,5 +18,11 @@ for f_name in files:
     lengths[f_name] = [len(t) for t in f.root.data]
     f.close()
 
-for a, b, c, d, e in zip([lengths[f] for f in files]):
-    print a, b, c, d
+
+for a, b, c, d, e in zip(
+    lengths['images_new_1p0n.h5'],
+    lengths['images_new_1p1n.h5'],
+    lengths['images_new_1p2n.h5'],
+    lengths['images_new_3p0n.h5'],
+    lengths['images_new_3p1n.h5']):
+    print a, b, c, d, e
