@@ -132,7 +132,7 @@ def fit_model_gen(
         model.fit_generator(
             train_sequence,
             len(train_sequence),
-            epochs=100,
+            epochs=10,
             validation_data=validation_data,
             use_multiprocessing=use_multiprocessing,
             workers=workers,
