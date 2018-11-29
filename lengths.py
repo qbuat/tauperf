@@ -14,7 +14,7 @@ files = [
 lengths = {}
 for f in files:
     print 'computing length of arrays in ', f
-    f = tables.open_file(f)
+    f = tables.open_file(os.path.join(folder, f))
     lengths[f] = [len(t) for t in f.root.data]
     f.close()
 
