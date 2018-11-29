@@ -18,5 +18,5 @@ for f_name in files:
     lengths[f_name] = [len(t) for t in f.root.data]
     f.close()
 
-for a, b, c, d in zip([lengths[f] for f in files]):
+for a, b, c, d, e in zip([lengths[f] for f in files]):
     print a, b, c, d
