@@ -12,10 +12,10 @@ files = [
 ]
 
 lengths = {}
-for f in files:
-    print 'computing length of arrays in ', f
+for f_name in files:
+    print 'computing length of arrays in ', f_name
     f = tables.open_file(os.path.join(folder, f))
-    lengths[f] = [len(t) for t in f.root.data]
+    lengths[f_name] = [len(t) for t in f.root.data]
     f.close()
 
 for a, b, c, d in zip([lengths[f] for f in files]):
