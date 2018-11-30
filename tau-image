@@ -18,7 +18,6 @@ from tauperf.parallel import run_pool, FuncWorker
 def create_image_data(
     filename, 
     tau_type, 
-    n_chunks=3, 
     show_progress=False, 
     outdir='.', 
     nentries=None,
@@ -34,7 +33,7 @@ def create_image_data(
     #     records = h5file.get('tree_' + tau_type)
     # records = getattr(h5file.root, 'tree_' + tau_type)
 
-
+    n_tables = 16000
     out_name = os.path.join(outdir, 'images_new_{0}.h5'.format(tau_type))
     log.info('create h5 file {0}'.format(out_name))
     out_h5 = tables.open_file(out_name, mode='a')
@@ -43,10 +42,27 @@ def create_image_data(
     # log.info('process {0}: {1} entries'.format(tau_type, len(records)))
     if nentries is not None:
         log.info('.. actually only running on {0} entries'.format(nentries))
+    
+    rfile_list = os.listdir(filename)
+    rfile_nentries = []
+    for rfilename in rfile_list:
+        rfile = ROOT.TFile(os.path.join(dir_name, rfilename))
+        tree = rfile.Get('tree_' + tau_type)
+        rfile_nentries.append(tree.GetEntries())
+
+    total_entries = sum(rfile_nentries)
+    log.info('Filling {} entries in {} tables'.format(total_entries, n_tables))
+
+    rfile_ntables = np.rint(n_tables * np.array(rfile_nentries) / float(total_entries))
+    # correct for rounding
+    error = n_tables - sum(rfile_ntables)
+    rfile_ntables[0]+= error
 
 #     log.info('chunk the training sample in {0}'.format(n_chunks))
 #     log.info('')
-    for ifile, rfilename in enumerate(os.listdir(filename)):
+
+
+    for ifile, rfilename in rfile_list:
         log.info('opening {}'.format(rfilename))
         rfile = ROOT.TFile(os.path.join(filename, rfilename))
         records = rfile.Get('tree_' + tau_type)
@@ -54,26 +70,16 @@ def create_image_data(
             out_h5, records, ifile,
             suffix=tau_type, 
             nentries=nentries,
-            n_chunks=n_chunks,
+            n_chunks=int(rfile_ntables[ifile]),
             do_plot=do_plot,
             show_progress=show_progress)
         rfile.Close()
-    # process_taus(
-    #     out_h5, records,
-    #     suffix=tau_type, 
-    #     nentries=nentries,
-    #     n_chunks=n_chunks,
-    #     do_plot=do_plot,
-    #     show_progress=show_progress)
+
     log.info('')
     log.info('close h5 file {0}'.format(out_name))
     out_h5.flush()
     out_h5.close()
 
-    #log.info('close h5 file {0}'.format(filename))
-    #    h5file.close()
-    # rfile.Close()
-    #log.info('')
     
 
 
@@ -87,7 +93,7 @@ if __name__ == '__main__':
     parser.add_argument('--no-progress-bar', default=False, action='store_true')
     parser.add_argument('--outdir', default=None)
     parser.add_argument('--nentries', type=int, default=None)
-    parser.add_argument('--chunks', default=3, type=int)
+    parser.add_argument('--n-tables', default=3, type=int)
     parser.add_argument('--jobs', default=1, type=int)
     parser.add_argument('--plot', default=False, action='store_true')
 
@@ -108,7 +114,6 @@ if __name__ == '__main__':
             for tt in tau_types:
                 create_image_data(
                     h5_filename, tt, 
-                    n_chunks=args.chunks,
                     nentries=args.nentries,
                     show_progress=not args.no_progress_bar, 
                     outdir=outdir)
@@ -118,7 +123,6 @@ if __name__ == '__main__':
             for tt in tau_types:
                 w = FuncWorker(
                     create_image_data, h5_filename, tt, 
-                    n_chunks=args.chunks, 
                     show_progress=False, 
                     outdir=outdir, 
                     nentries=args.nentries)

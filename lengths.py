@@ -29,3 +29,4 @@ for a, b, c, d, e in zip(
 
 sums = [sum(lengths[f]) for f in files]
 print sums
+print lengths['images_new_1p0n.h5']
