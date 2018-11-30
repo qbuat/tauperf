@@ -51,26 +51,30 @@ def create_image_data(
         rfile_nentries.append(tree.GetEntries())
 
     total_entries = sum(rfile_nentries)
-    log.info('Filling {} entries in {} tables'.format(total_entries, n_tables))
 
     rfile_ntables = np.rint(n_tables * np.array(rfile_nentries) / float(total_entries))
     # correct for rounding
     error = n_tables - sum(rfile_ntables)
     rfile_ntables[0]+= error
 
-#     log.info('chunk the training sample in {0}'.format(n_chunks))
-#     log.info('')
+    log.info('Filling {} entries in {} tables'.format(total_entries, sum(rfile_ntables)))
 
-
-    for ifile, rfilename in rfile_list:
-        log.info('opening {}'.format(rfilename))
+    for ifile, rfilename in enumerate(rfile_list):
+        log.info('processing {}'.format(rfilename))
         rfile = ROOT.TFile(os.path.join(filename, rfilename))
         records = rfile.Get('tree_' + tau_type)
+        n_chunks = int(rfile_ntables[ifile])
+        if ifile == 0:
+            init_table_number = 0
+        else:
+            init_table_number = int(rfile_ntables[ifile - 1])
         process_taus(
-            out_h5, records, ifile,
+            out_h5, 
+            records, 
+            init_table_number,
             suffix=tau_type, 
             nentries=nentries,
-            n_chunks=int(rfile_ntables[ifile]),
+            n_chunks=n_chunks,
             do_plot=do_plot,
             show_progress=show_progress)
         rfile.Close()
