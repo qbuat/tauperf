@@ -127,7 +127,8 @@ def process_taus(
         nentries = tree.GetEntries()
 
     # split the events in n_chunks
-    log.info('splitting {} entries in {} chunks'.format(nentries, n_chunks))
+    log.info('splitting {} entries in {} chunks, filling table_{} to table_{}'.format(
+            nentries, n_chunks, init_table_number, init_table_number + n_chunks - 1))
     entry_lists = np.array_split(xrange(nentries), n_chunks)
     
     if not out_h5.root.__contains__('data'):

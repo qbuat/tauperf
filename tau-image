@@ -37,7 +37,7 @@ def create_image_data(
     n_tables = 16000
     out_name = os.path.join(outdir, 'images_new_{0}.h5'.format(tau_type))
     log.info('create h5 file {0}'.format(out_name))
-    out_h5 = tables.open_file(out_name, mode='a')
+    out_h5 = tables.open_file(out_name, mode='w')
     # group = out_h5.create_group("/", 'data', 'yup')
 
     # log.info('process {0}: {1} entries'.format(tau_type, len(records)))
