@@ -69,10 +69,11 @@ def create_image_data(
         rfile = ROOT.TFile(os.path.join(filename, rfilename))
         records = rfile.Get('tree_' + tau_type)
         n_chunks = int(rfile_ntables[ifile])
+
         if ifile == 0:
             init_table_number = 0
         else:
-            init_table_number = int(rfile_ntables[ifile - 1])
+            init_table_number = int(sum(rfile_ntables[0:ifile]))
         process_taus(
             out_h5, 
             records, 
@@ -142,7 +143,7 @@ if __name__ == '__main__':
         create_image_data(
             h5_filename, tau_type, 
             nentries=args.nentries,
-            show_progress=not args.no_progress_bar, 
+            show_progress=False,#not args.no_progress_bar, 
             do_plot=args.plot,
             outdir=outdir)
             
