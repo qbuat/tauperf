@@ -2,10 +2,11 @@ import os
 import numpy as np
 from argparse import ArgumentParser
 from keras.utils.np_utils import to_categorical
-from tauperf.imaging.load import load_test_data, prepare_samples
-
-
+from tauperf.imaging.load import load_data, prepare_samples
+from tauperf.imaging.utils import get_X_y
+import tables
 import logging
+
 log = logging.getLogger(os.path.basename(__file__))
 log.setLevel(logging.INFO)
 
@@ -36,39 +37,30 @@ if args.debug:
 #data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_uniform_size')
 # data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_int')
 #data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_float_s1_128')
-data_dir = os.path.join(os.getenv('DATA_AREA'), 'v14/test_aod_1')
+data_dir = os.path.join(os.getenv('DATA_AREA'), 'v14/test_aod_2')
                         
 if args.one_prong_only:
-    filenames = [
-        os.path.join(data_dir, "images_new_1p0n.h5"),
-        os.path.join(data_dir, "images_new_1p1n.h5"),
-        os.path.join(data_dir, "images_new_1p2n.h5"),
-        ]
+    data_types = ['1p0n', '1p1n', '1p2n']
     labels = ['1p0n', '1p1n', '1pXn']
     n_classes = 3
 else: 
-    filenames = [
-        os.path.join(data_dir, "images_new_1p0n.h5"),
-        os.path.join(data_dir, "images_new_1p1n.h5"),
-        os.path.join(data_dir, "images_new_1p2n.h5"),
-        os.path.join(data_dir, "images_new_3p0n.h5"),
-        os.path.join(data_dir, "images_new_3p1n.h5"),
-        ]
+    data_types = ['1p0n', '1p1n', '1p2n', '3p0n', '3p1n']
     labels = ['1p0n', '1p1n', '1pXn', '3p0n', '3pXn']
     n_classes = 5
 
 
-train_ind, test_ind, val_ind = prepare_samples(filenames, labels)
-
+train_ind, test_ind, valid_ind = prepare_samples([], labels)
+print len(test_ind)
+test_ind = test_ind[0:20]
 #kine_features = ['pt', 'eta', 'phi']
 #features = kine_features + ['tracks', 's1', 's2', 's3', 's4', 's5']
 #reg_features = ['true_pt', 'true_eta', 'true_phi', 'true_m']
 
 features = ['tracks', 's1', 's2', 's3', 's4', 's5']
 
-test, val, y_test, y_val = load_test_data(
-    filenames, test_ind, val_ind, debug=args.debug)
-y_val_cat = to_categorical(y_val, n_classes)
+val_file = tables.open_file(os.path.join(data_dir, 'tables_0.h5'))
+val, _ = get_X_y(val_file, ['1p0n'])
+val_file.close()
 
 
 # ##############################################
@@ -77,7 +69,7 @@ if args.dev:
         n_classes, args.training_chunks)
     model_filename += '_{epoch:02d}_epochs.h5'
 else:
-    model_filename = 'cache/multi_{0}_classes.h5'.format(n_classes)
+    model_filename = 'cache/multi_{0}_classes_bla.h5'.format(n_classes)
 
 if args.no_train:
     log.info('loading model')
@@ -87,7 +79,7 @@ else:
     log.info('training...')
     from tauperf.imaging.models import *
 
-    model = dense_merged_model_topo(test, n_classes=n_classes, final_activation='softmax')
+    model = dense_merged_model_topo(val, n_classes=n_classes, final_activation='softmax')
     # model = dense_merged_model_topo_with_regression(test, n_classes=n_classes, final_activation='softmax')
     # model = dense_merged_model_multi_channels(test, n_classes=n_classes, final_activation='softmax')
     # model = dense_merged_model_topo_upsampled(test, n_classes=n_classes, final_activation='softmax')
@@ -104,11 +96,14 @@ else:
   
     fit_model_gen(
         model,
-        filenames, features,
+        data_dir,
+        data_types,
+        features,
         train_ind,
-        val, y_val_cat,
+        valid_ind,
         reg_features=None,
-        n_chunks=args.training_chunks,
+        n_chunks=len(train_ind),
+        # n_chunks=args.training_chunks,
         use_multiprocessing=False,
         workers=1,
         filename=model_filename,
@@ -128,9 +123,29 @@ else:
 log.info('testing stuff')
 
 log.info('compute classifier scores')
+# test, y_test = load_data(
+#     filenames, test_ind, debug=args.debug)
 
-X_test  = [test[feat] for feat in features]
-y_pred = model.predict(X_test, batch_size=32, verbose=1)
+from tauperf.imaging.utils import DataSequence
+test_sequence = DataSequence(
+    test_ind,
+    data_types,
+    len(test_ind),
+    features,
+    data_dir,
+    predict=True)
+
+log.info('define test sequence')
+#X_test  = [test[feat] for feat in features]
+y_pred = model.predict_generator(
+    test_sequence, 
+    # batch_size=32, 
+    verbose=1)
+
+log.info('load test data')
+test, y_test = load_data(
+    data_dir, data_types, test_ind, debug=args.debug)
+
 
 log.info('drawing the computer-vision confusion matrix')
 from sklearn.metrics import confusion_matrix
@@ -146,7 +161,7 @@ plot_confusion_matrix(
     name='plots/imaging/confusion_matrix_categorical.pdf')
 
 log.info('drawing the pantau confusion matrix')
-cnf_mat = confusion_matrix(y_test, test['pantau'])
+cnf_mat = confusion_matrix(y_test[test['pantau'] < 5], test['pantau'][test['pantau'] < 5])
 diagonal = float(np.trace(cnf_mat)) / float(np.sum(cnf_mat))
 plot_confusion_matrix(
     cnf_mat, classes=labels, 
@@ -163,3 +178,7 @@ from tauperf.imaging.plotting import plot_scores
 plot_scores(y_pred, y_test)
 
 log.info('job finished succesfully!')
+
+log.info("copying over to quentin's eos")
+import subprocess
+subprocess.call('cp -r plots/imaging/* /eos/user/q/qbuat/imaging_dev/', shell=True)
