@@ -28,6 +28,7 @@ pip install rootpy
 pip install tabulate
 pip install cython
 pip install nose
+pip install seaborn
 
 # pip install theano==0.9.0
 # pip install keras==2.0.6

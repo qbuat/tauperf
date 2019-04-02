@@ -33,10 +33,7 @@ if args.debug:
     log.warning('DEBUG MODE ACTIVATED')
     log.warning('')
 
-# data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test')
-#data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_uniform_size')
-# data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_int')
-#data_dir = os.path.join(os.getenv('DATA_AREA'), 'v13/test_float_s1_128')
+### location of the training data
 data_dir = os.path.join(os.getenv('DATA_AREA'), 'v14/test_aod_2')
                         
 if args.one_prong_only:
@@ -49,9 +46,9 @@ else:
     n_classes = 5
 
 
-train_ind, test_ind, valid_ind = prepare_samples([], labels)
-print len(test_ind)
-test_ind = test_ind[0:20]
+train_ind, test_ind, valid_ind = prepare_samples(args.training_chunks)
+test_ind = test_ind[0:200]
+
 #kine_features = ['pt', 'eta', 'phi']
 #features = kine_features + ['tracks', 's1', 's2', 's3', 's4', 's5']
 #reg_features = ['true_pt', 'true_eta', 'true_phi', 'true_m']
@@ -103,7 +100,6 @@ else:
         valid_ind,
         reg_features=None,
         n_chunks=len(train_ind),
-        # n_chunks=args.training_chunks,
         use_multiprocessing=False,
         workers=1,
         filename=model_filename,
@@ -151,6 +147,7 @@ log.info('drawing the computer-vision confusion matrix')
 from sklearn.metrics import confusion_matrix
 from tauperf.imaging.plotting import plot_confusion_matrix
 
+
 cnf_mat = confusion_matrix(y_test, np.argmax(y_pred, axis=1))
 diagonal = float(np.trace(cnf_mat)) / float(np.sum(cnf_mat))
 
@@ -176,6 +173,13 @@ plot_roc(y_test, y_pred, test['pantau'])
 log.info('drawing the scores')
 from tauperf.imaging.plotting import plot_scores
 plot_scores(y_pred, y_test)
+
+log.info('accuracy plot')
+import seaborn as sns
+import matplotlib.pyplot as plt
+plt.clf()
+sns.regplot(x=test['pt'], y=np.argmax(y_pred, axis=1)-y_test, x_bins=10, fit_reg=None)
+plt.savefig('plots/imaging/accuracy_pt.pdf')
 
 log.info('job finished succesfully!')
 

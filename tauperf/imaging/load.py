@@ -4,8 +4,12 @@ from . import log; log = log.getChild(__name__)
 import tables
 from sklearn import model_selection
 
+from tauperf import print_progress
+def print_samples(train_ind, val_ind, test_ind, labels):
+    pass
 
-def prepare_samples(filenames, labels):
+
+def prepare_samples(n_training_chunks=-1):
     """
     printing information about the samples
     (training, validation and testing size)
@@ -36,13 +40,13 @@ def prepare_samples(filenames, labels):
     # log.info('Number of tables for each sample: {}'.format(n_tables))
     # take 20% of the sample for validation and testing
 
-    n_chunks = 1000
+    n_chunks = 10000
     train_ind, test_ind = model_selection.train_test_split(
         xrange(n_chunks), test_size=0.10, random_state=42)
     val_ind, test_ind = np.split(test_ind, [len(test_ind) / 2])
 
-    n_training_chunks = n_chunks
-    train_ind = train_ind[0:n_training_chunks]
+    if n_training_chunks > 0 and n_training_chunks < len(train_ind):
+        train_ind = train_ind[0:n_training_chunks]
 
     # headers = ["Sample", "Training", "Validation", "Testing", "Training tables"]
     # sample_size_table = []
@@ -88,13 +92,13 @@ def get_X_y(h5_file, data_types, equal_size=False, debug=False):
 def load_data(data_dir, data_types, test_indices, debug=False):
 
 
-    log.info('loading test data: {}'.format(test_indices))
+    log.info('loading test data: n_chunks = {}'.format(len(test_indices)))
 
     X_test = []
     y_test = []
     for i_ind, index in enumerate(test_indices):
+        print_progress(i_ind, len(test_indices), prefix='test data')
         h5file = tables.open_file(os.path.join(data_dir, 'tables_{}.h5'.format(index)))
-        print i_ind, len(test_indices)
         X, y = get_X_y(h5file, data_types, debug=debug)
         X_test.append(X)
         y_test.append(y)
