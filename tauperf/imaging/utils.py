@@ -133,16 +133,13 @@ def fit_model_gen(
 
         # TODO
         # need to understand how to pass the validation sequence
+        # for now, will create an array manually from the first 50 indices
         val, y_val = valid_sequence[0]
-
-        # val = []
-        # y_val = []
-        # for (X, y) in valid_sequence:
-        #     val.append(X)
-        #     y_val.append(y)
-
-        # val = np.concatenate(val)
-        # y_val = np.concatenat(y_val)
+        for i in range(1, 50):
+            X, y = valid_sequence[i]
+            for i_x, _x in enumerate(X):
+                val[i_x] = np.concatenate((val[i_x], _x))
+            y_val = np.concatenate((y_val, y))
         log.info('Start training ...')
 
         # make a list of callbacks
@@ -166,6 +163,7 @@ def fit_model_gen(
             train_sequence,
             len(train_sequence),
             epochs=epochs,
+            # validation_data=valid_sequence, # causes seg fault??
             validation_data=(val, y_val),
             use_multiprocessing=use_multiprocessing,
             workers=workers,

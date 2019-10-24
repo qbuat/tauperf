@@ -13,7 +13,7 @@ source imaging_ve_gpu/bin/activate
 
 echo 'install python packages'
 pip install pip --upgrade
-pip install /tmp/tensorflow_pkg/tensorflow-1.6.0-cp27-none-linux_x86_64.whl
+#pip install /tmp/tensorflow_pkg/tensorflow-1.6.0-cp27-none-linux_x86_64.whl
 #pip install tensorflow
 #pip install tensorflow-gpu
 pip install theano

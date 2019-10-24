@@ -70,8 +70,8 @@ if args.dev:
         n_classes, args.training_chunks)
     model_filename += '_{epoch:02d}_epochs.h5'
 else:
-    model_filename = 'cache/multi_{0}_classes_bla.h5'.format(n_classes)
-    model_filename = 'cache/multi_5_classes_15000_chunks_02_epochs.h5'
+    # model_filename = 'cache/multi_{0}_classes_bla.h5'.format(n_classes)
+    model_filename = 'cache/multi_5_classes_{0}_chunks.h5'.format(args.training_chunks)
 
 if args.no_train:
     log.info('loading model')
@@ -140,9 +140,9 @@ test_sequence = DataSequence(
 log.info('define test sequence')
 #X_test  = [test[feat] for feat in features]
 y_pred = model.predict_generator(
-    test_sequence, 
+    test_sequence)
     # batch_size=32, 
-    verbose=1)
+    # verbose=1)
 
 log.info('load test data')
 test, y_test = load_data(

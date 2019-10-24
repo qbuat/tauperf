@@ -40,7 +40,8 @@ def prepare_samples(n_training_chunks=-1):
     # log.info('Number of tables for each sample: {}'.format(n_tables))
     # take 20% of the sample for validation and testing
 
-    n_chunks = 15900
+    n_chunks = 15950
+    log.info('specified training chunks = {} (maximum = {})'.format(n_training_chunks, n_chunks))
     train_ind, test_ind = model_selection.train_test_split(
         xrange(n_chunks), test_size=0.10, random_state=42)
     val_ind, test_ind = np.split(test_ind, [len(test_ind) / 2])
