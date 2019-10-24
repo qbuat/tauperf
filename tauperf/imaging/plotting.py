@@ -381,3 +381,25 @@ def plot_reg(pred, true, calo, ene):
 #         quantile_corr = np.quantile(np.abs(a[:,1] -  np.mean(a[:,1])), 0.68)
 #         print '{0:1.3f} | {1:1.3f} | {2:1.3f} | {3:1.3f} | {4:1.3f}'.format(
 #             pt, mean, mean_corr, quantile, quantile_corr)
+
+
+
+def select_best_ten(test, y_pred, data_classes):
+    """
+    """
+    for i_class, class_name in enumerate(data_classes):
+        test_class = test[test['truthmode'] == i_class]
+        y_pred_class = y_pred[test['truthmode'] == i_class]
+        y_pred_class = y_pred_class[:,i_class]
+
+        best_10 = np.argsort(y_pred_class)[::-1][0:10]
+        test_class = np.take(test_class, best_10)
+        y_pred_class = np.take(y_pred_class, best_10)
+        np.save(
+            'best_10_{}.npy'.format(class_name),
+            test_class)
+        np.save(
+            'best_10_score_{}.npy'.format(class_name),
+            y_pred_class)
+
+

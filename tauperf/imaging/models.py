@@ -182,6 +182,7 @@ def dense_merged_model_topo(data, n_classes=3, final_activation='softmax'):
     """
     """
 
+
     log.info('* Tracks: build rnn model')
     tracks_input = Input(shape=data[0]['tracks'].shape)
     tracks_x = Reshape((15, 4))(tracks_input)
@@ -291,6 +292,19 @@ def dense_merged_model_topo(data, n_classes=3, final_activation='softmax'):
     log.info('\t s5 final shape   = {0}'.format(s5_out._keras_shape))
 
 
+    # log.info('* Calo Kinematics: build the dense model')
+    # pt_input = Input(shape=(1,))
+    # eta_input = Input(shape=(1,))
+    # phi_input = Input(shape=(1,))
+
+    # kine_input = concatenate([pt_input, eta_input, phi_input], axis=1)
+    # log.info('\t calo kinematics input shape = {0}'.format(kine_input._keras_shape))
+    # kine_out = Dense(128, activation='relu')(kine_input)
+    # kine_out = Dropout(0.2)(kine_out)
+    # kine_out = Reshape((1, 128))(kine_out)
+    # log.info('\t calo kinematics final shape = {0}'.format(kine_out._keras_shape))
+
+
     log.info('merge layers')
     layers = [
         tracks_out,
@@ -298,14 +312,15 @@ def dense_merged_model_topo(data, n_classes=3, final_activation='softmax'):
         s2_out,
         s3_out,
         s4_out,
-        s5_out
+        s5_out,
+        # kine_out,
         ]
 
     merge = concatenate(layers, axis=1)
     # log.info('\t merged layers shape = {0}'.format(merge._keras_shape))
     # merge_x = LSTM(32)(merge)
     merge_x = Flatten()(merge)
-    log.info('\t merged lstm shape   = {0}'.format(merge_x._keras_shape))
+    log.info('\t merged shape   = {0}'.format(merge_x._keras_shape))
     merge_x = Dense(512, activation='relu')(merge_x)
     log.info('\t merged dense shape  = {0}'.format(merge_x._keras_shape))
     output_mod = Dense(n_classes, activation=final_activation)
@@ -319,7 +334,11 @@ def dense_merged_model_topo(data, n_classes=3, final_activation='softmax'):
         s2_input,
         s3_input,
         s4_input,
-        s5_input
+        s5_input,
+        # pt_input,
+        # eta_input,
+        # phi_input,
+
         ]
 
     model = Model(inputs=model_input, outputs=output_x)

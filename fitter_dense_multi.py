@@ -25,6 +25,10 @@ parser.add_argument(
     '--one-prong-only', default=False, action='store_true')
 parser.add_argument(
     '--dev', default=False, action='store_true')
+parser.add_argument(
+    '--epochs', default=10, type=int)
+parser.add_argument(
+    '--best-ten', default=False, action='store_true')
 
 args = parser.parse_args()
 
@@ -49,11 +53,11 @@ else:
 train_ind, test_ind, valid_ind = prepare_samples(args.training_chunks)
 test_ind = test_ind[0:200]
 
-#kine_features = ['pt', 'eta', 'phi']
-#features = kine_features + ['tracks', 's1', 's2', 's3', 's4', 's5']
+features = ['tracks', 's1', 's2', 's3', 's4', 's5']
+# features += ['pt', 'eta', 'phi']
+
 #reg_features = ['true_pt', 'true_eta', 'true_phi', 'true_m']
 
-features = ['tracks', 's1', 's2', 's3', 's4', 's5']
 
 val_file = tables.open_file(os.path.join(data_dir, 'tables_0.h5'))
 val, _ = get_X_y(val_file, ['1p0n'])
@@ -67,6 +71,7 @@ if args.dev:
     model_filename += '_{epoch:02d}_epochs.h5'
 else:
     model_filename = 'cache/multi_{0}_classes_bla.h5'.format(n_classes)
+    model_filename = 'cache/multi_5_classes_15000_chunks_02_epochs.h5'
 
 if args.no_train:
     log.info('loading model')
@@ -104,6 +109,7 @@ else:
         workers=1,
         filename=model_filename,
         metrics=metrics,
+        epochs=args.epochs,
         losses=losses,
         loss_weights=loss_weights,
         overwrite=args.overwrite,
@@ -174,12 +180,16 @@ log.info('drawing the scores')
 from tauperf.imaging.plotting import plot_scores
 plot_scores(y_pred, y_test)
 
-log.info('accuracy plot')
-import seaborn as sns
-import matplotlib.pyplot as plt
-plt.clf()
-sns.regplot(x=test['pt'], y=np.argmax(y_pred, axis=1)-y_test, x_bins=10, fit_reg=None)
-plt.savefig('plots/imaging/accuracy_pt.pdf')
+if args.best_ten:
+    from tauperf.imaging.plotting import select_best_ten
+    select_best_ten(test, y_pred, data_types)
+
+# log.info('accuracy plot')
+# import seaborn as sns
+# import matplotlib.pyplot as plt
+# plt.clf()
+# sns.regplot(x=test['pt'], y=np.argmax(y_pred, axis=1)-y_test, x_bins=10, fit_reg=None)
+# plt.savefig('plots/imaging/accuracy_pt.pdf')
 
 log.info('job finished succesfully!')
 

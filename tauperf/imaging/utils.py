@@ -76,6 +76,7 @@ def fit_model_gen(
         losses='categorical_crossentropy',
         model_optimizer='rmsprop',
         loss_weights=1,
+        epochs=10,
         overwrite=False,
         no_train=False,
         equal_size=False,
@@ -130,8 +131,10 @@ def fit_model_gen(
             reg_features=reg_features, 
             debug=debug)
 
-        print valid_indices
+        # TODO
+        # need to understand how to pass the validation sequence
         val, y_val = valid_sequence[0]
+
         # val = []
         # y_val = []
         # for (X, y) in valid_sequence:
@@ -153,7 +156,6 @@ def fit_model_gen(
                 EarlyStopping(verbose=True, patience=10, monitor='val_loss'),
                 ModelCheckpoint(filename, monitor='val_loss', verbose=True, save_best_only=True)
                 ]
-        print train_sequence
 
         # validation_data = (
         #     [X_test[feat] for feat in features],
@@ -163,7 +165,7 @@ def fit_model_gen(
         model.fit_generator(
             train_sequence,
             len(train_sequence),
-            epochs=10,
+            epochs=epochs,
             validation_data=(val, y_val),
             use_multiprocessing=use_multiprocessing,
             workers=workers,

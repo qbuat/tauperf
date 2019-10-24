@@ -5,7 +5,8 @@ echo "specific to lxplus"
 setupATLAS
 lsetup "root 6.04.10-x86_64-slc6-gcc48-opt"
 
-export DATA_AREA=/eos/atlas/user/q/qbuat/IMAGING
+#export DATA_AREA=/eos/atlas/user/q/qbuat/IMAGING
+export DATA_AREA=/eos/atlas/user/q/qbuat/IMAGING_bacckup_techlab/IMAGING/
 export VE_PATH=/afs/cern.ch/user/q/qbuat/work/public/tau_imaging/imaging_ve
 
 echo 'activating the virtual environment'
