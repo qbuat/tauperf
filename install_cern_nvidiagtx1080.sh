@@ -2,7 +2,9 @@
 source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
 lsetup root
 lsetup cmake
+lsetup hdf5
 
+export HDF5_DIR=$ALRB_HDF5_PATH
 cd /data/${USER}
 
 echo 'create the virtual environement'
@@ -14,13 +16,13 @@ source imaging_ve_gpu/bin/activate
 echo 'install python packages'
 pip install pip --upgrade
 #pip install /tmp/tensorflow_pkg/tensorflow-1.6.0-cp27-none-linux_x86_64.whl
-#pip install tensorflow
-#pip install tensorflow-gpu
+pip install tensorflow
+pip install tensorflow-gpu
 pip install theano
 pip install keras
 pip install pydot_ng
 pip install h5py
-pip install tables
+pip install tables=3.2.0
 pip install scikit-learn
 pip install scikit-image
 pip install matplotlib

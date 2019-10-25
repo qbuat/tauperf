@@ -50,7 +50,7 @@ else:
     n_classes = 5
 
 
-train_ind, test_ind, valid_ind = prepare_samples(args.training_chunks)
+train_ind, test_ind, valid_ind = prepare_samples(args.training_chunks, [2013, 2640, 4266, 9172, 11273, 11756, 14097])
 test_ind = test_ind[0:200]
 
 features = ['tracks', 's1', 's2', 's3', 's4', 's5']
@@ -59,9 +59,6 @@ features = ['tracks', 's1', 's2', 's3', 's4', 's5']
 #reg_features = ['true_pt', 'true_eta', 'true_phi', 'true_m']
 
 
-val_file = tables.open_file(os.path.join(data_dir, 'tables_0.h5'))
-val, _ = get_X_y(val_file, ['1p0n'])
-val_file.close()
 
 
 # ##############################################
@@ -81,6 +78,10 @@ else:
     log.info('training...')
     from tauperf.imaging.models import *
 
+    # need to get an example table to infer data structure
+    val_file = tables.open_file(os.path.join(data_dir, 'tables_0.h5'))
+    val, _ = get_X_y(val_file, ['1p0n'])
+    val_file.close()
     model = dense_merged_model_topo(val, n_classes=n_classes, final_activation='softmax')
     # model = dense_merged_model_topo_with_regression(test, n_classes=n_classes, final_activation='softmax')
     # model = dense_merged_model_multi_channels(test, n_classes=n_classes, final_activation='softmax')
@@ -139,11 +140,8 @@ test_sequence = DataSequence(
 
 log.info('define test sequence')
 #X_test  = [test[feat] for feat in features]
-y_pred = model.predict_generator(
-    test_sequence)
-    # batch_size=32, 
-    # verbose=1)
-
+y_pred = model.predict_generator(test_sequence)
+print len(test_sequence), len(test_ind)
 log.info('load test data')
 test, y_test = load_data(
     data_dir, data_types, test_ind, debug=args.debug)
@@ -153,7 +151,8 @@ log.info('drawing the computer-vision confusion matrix')
 from sklearn.metrics import confusion_matrix
 from tauperf.imaging.plotting import plot_confusion_matrix
 
-
+print y_test.shape
+print np.argmax(y_pred, axis=1).shape
 cnf_mat = confusion_matrix(y_test, np.argmax(y_pred, axis=1))
 diagonal = float(np.trace(cnf_mat)) / float(np.sum(cnf_mat))
 

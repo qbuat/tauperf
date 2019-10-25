@@ -9,7 +9,7 @@ def print_samples(train_ind, val_ind, test_ind, labels):
     pass
 
 
-def prepare_samples(n_training_chunks=-1):
+def prepare_samples(n_training_chunks=-1, faulty_tables=[]):
     """
     printing information about the samples
     (training, validation and testing size)
@@ -42,8 +42,14 @@ def prepare_samples(n_training_chunks=-1):
 
     n_chunks = 15950
     log.info('specified training chunks = {} (maximum = {})'.format(n_training_chunks, n_chunks))
+    _all_chunks = [i for i in xrange(n_chunks)]
+    # remove faulty tables
+    for _ind in faulty_tables:
+        if _ind in _all_chunks:
+            _all_chunks.remove(_ind)
+
     train_ind, test_ind = model_selection.train_test_split(
-        xrange(n_chunks), test_size=0.10, random_state=42)
+        _all_chunks, test_size=0.10, random_state=42)
     val_ind, test_ind = np.split(test_ind, [len(test_ind) / 2])
 
     if n_training_chunks > 0 and n_training_chunks < len(train_ind):
@@ -75,11 +81,11 @@ def get_X_y(h5_file, data_types, equal_size=False, debug=False):
         log.info('Train and validate with equal size for each mode')
         min_size = min([len(t) for t in data])
 
-    if debug:
-        # log.info('Train with very small stat for debugging')
-        min_size = min([len(t) for t in data] + [1000])
+    # if debug:
+    #     # log.info('Train with very small stat for debugging')
+    #     min_size = min([len(t) for t in data] + [1000])
         
-    if equal_size or debug:
+    if equal_size:# or debug:
         data = [t[0:min_size] for t in data]
     else:
         data = [t.read() for t in data]
@@ -98,7 +104,10 @@ def load_data(data_dir, data_types, test_indices, debug=False):
     X_test = []
     y_test = []
     for i_ind, index in enumerate(test_indices):
-        print_progress(i_ind, len(test_indices), prefix='test data')
+        if debug:
+            print index
+        if not debug:
+            print_progress(i_ind, len(test_indices), prefix='test data')
         h5file = tables.open_file(os.path.join(data_dir, 'tables_{}.h5'.format(index)))
         X, y = get_X_y(h5file, data_types, debug=debug)
         X_test.append(X)
