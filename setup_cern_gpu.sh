@@ -4,6 +4,8 @@
 echo "specific to lxplus"
 setupATLAS
 lsetup "root 6.04.10-x86_64-slc6-gcc48-opt"
+lsetup hdf5
+export HDF5_DIR=$ALRB_HDF5_PATH
 
 #export DATA_AREA=/data/vol/qbuat/IMAGING
 #export DATA_AREA=/eos/atlas/user/q/qbuat/IMAGING_bacckup_techlab/IMAGING/
